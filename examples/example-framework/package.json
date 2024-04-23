@@ -1,0 +1,19 @@
+{
+  "name": "example-framework",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "miniflare": "^3.20240129.3",
+    "vite": "^6.0.0-alpha",
+    "vite-environment-plugin-workerd": "workspace:*"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240222.0",
+    "typescript": "^5.3.3"
+  }
+}
