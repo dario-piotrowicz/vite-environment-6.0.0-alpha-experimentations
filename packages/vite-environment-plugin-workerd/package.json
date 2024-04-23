@@ -1,0 +1,24 @@
+{
+  "name": "vite-environment-plugin-workerd",
+  "main": "dist/index.cjs",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "esbuild": "^0.15.3",
+    "tsup": "^8.0.2",
+    "typescript": "^5.0.4",
+    "vite": "^6.0.0-alpha"
+  },
+  "peerDependencies": {
+    "miniflare": "^3.20240129.3",
+    "wrangler": "3.30.0"
+  }
+}
