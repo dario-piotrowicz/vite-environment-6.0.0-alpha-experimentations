@@ -1,0 +1,14 @@
+{
+  "name": "vite-environment-6.0.0-alpha-experimentations",
+  "scripts": {
+    "postinstall": "pnpm build:packages",
+    "build:packages": "pnpm _build:packages:code && pnpm _build:packages:types",
+    "_build:packages:code": "pnpm --filter TODO --sequential build",
+    "_build:packages:types": "pnpm --filter TODO --sequential build:types",
+    "prettify": "prettier --ignore-path .gitignore --write ."
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}
