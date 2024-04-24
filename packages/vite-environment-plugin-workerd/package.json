@@ -1,11 +1,10 @@
 {
   "name": "vite-environment-plugin-workerd",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "build:watch": "tsup --watch",
-    "build:types": "tsc --emitDeclarationOnly --outDir ./dist"
+    "build:watch": "tsup --watch"
   },
   "files": [
     "dist"

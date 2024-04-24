@@ -1,16 +1,33 @@
 import type { ViteDevServer } from 'vite';
-import { viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
+import { type WorkerdDevEnvironment, viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
+import type * as http from 'node:http';
 
 export function exampleFramework({ entrypoint }: { entrypoint: string}) {
   return {
     name: 'example-framework-plugin',
+
     configureServer(server: ViteDevServer) {
+      const devEnv = server.environments["workerd"] as WorkerdDevEnvironment;
+
       return async () => {
-        server.middlewares.use(async (req, res) => {
-          const transformedHtml = `TODO<run -> ${entrypoint}>`;
-          res.end(transformedHtml);
-        });
-      };
+        server.middlewares.use(async (req: http.IncomingMessage, res: http.ServerResponse) => {
+
+          const dispatchRequest = await devEnv.api.createRequestDispatcher({
+            entrypoint,
+          });
+
+            const url = `http://localhost${req.url ?? '/'}`;
+
+            const nativeReq = new Request(url);
+            const resp = await dispatchRequest(nativeReq);
+            const html = await resp.text();
+            const transformedHtml = await server.transformIndexHtml(
+              url,
+              html,
+            );
+            res.end(transformedHtml);
+        })
+      }
     },
   };
 }
@@ -27,7 +44,10 @@ export default {
   optimizeDeps: {
     include: [],
   },
-  plugins: [plugin(), exampleFramework({ entrypoint })],
+  plugins: [
+    plugin(),
+    exampleFramework({ entrypoint })
+  ],
   build: {
     minify: false,
   },

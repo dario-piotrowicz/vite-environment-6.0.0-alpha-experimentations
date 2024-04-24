@@ -17,9 +17,10 @@ const buildClientConfig = defineConfig({
 const buildPluginConfig = defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
-  format: ['esm'],
+  dts: true,
+  format: ['cjs'],
   platform: 'node',
-  external: ['miniflare', 'workerd', '@cspotcode/source-map-support'],
+  external: ['miniflare', 'workerd', '@cspotcode/source-map-support', 'lightningcss', 'esbuild', 'vite'],
 });
 
 export default [buildClientConfig, buildPluginConfig];
