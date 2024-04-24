@@ -17,7 +17,7 @@ const buildClientConfig = defineConfig({
 const buildPluginConfig = defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
-  format: ['cjs'],
+  format: ['esm'],
   platform: 'node',
   external: ['miniflare', 'workerd', '@cspotcode/source-map-support'],
 });

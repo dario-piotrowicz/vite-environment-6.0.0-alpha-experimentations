@@ -1,6 +1,6 @@
 {
   "name": "vite-environment-plugin-workerd",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsup",

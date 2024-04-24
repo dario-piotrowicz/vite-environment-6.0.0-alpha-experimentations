@@ -1,10 +1,10 @@
 import { type ViteDevServer } from 'vite';
 
-export function viteRuntimeWorkerd() {
+export function viteEnvironmentPluginWorkerd() {
   return {
-    name: 'vite-runtime-workerd-plugin',
+    name: 'vite-environment-plugin-workerd',
     async configureServer(server: ViteDevServer) {
-      console.log('TODO');
+      console.log('[vite-environment-plugin-workerd] TODO');
     },
   };
 }
