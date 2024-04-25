@@ -1,4 +1,4 @@
-import type { ViteDevServer } from 'vite';
+import type { UserConfig, ViteDevServer } from 'vite';
 import { type WorkerdDevEnvironment, viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
 import type * as http from 'node:http';
 
@@ -35,11 +35,18 @@ export function exampleFramework({ entrypoint }: { entrypoint: string}) {
 const plugin = viteEnvironmentPluginWorkerd;
 const entrypoint = './entry-workerd.ts';
 
-/** @type {import('vite').UserConfig} */
-export default {
+const config: UserConfig = {
   appType: 'custom',
   ssr: {
     target: 'webworker',
+  },
+  dev: {
+    preTransformRequests: false,
+  },
+  server: {
+    // TODO: without this (deprecated) setting we get an error in the terminal, investigate
+    //       why that is, and also why dev.preTransformRequests doesn't work
+    preTransformRequests: false,
   },
   optimizeDeps: {
     include: [],
@@ -52,3 +59,5 @@ export default {
     minify: false,
   },
 };
+
+export default config;

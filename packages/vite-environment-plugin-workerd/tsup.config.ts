@@ -3,12 +3,12 @@ import { defineConfig } from 'tsup';
 // build in two steps to export worker entry script as string
 
 /**
- * This configuration is for building the "client", which can then be
+ * This configuration is for building the worker, which can then be
  * used by the plugin
  */
-const buildClientConfig = defineConfig({
-  entry: ['src/client/index.ts'],
-  outDir: 'dist/client',
+const buildWorkerConfig = defineConfig({
+  entry: ['src/worker/index.ts'],
+  outDir: 'dist/worker',
   format: ['esm'],
   platform: 'browser',
   noExternal: [/.*/],
@@ -23,4 +23,4 @@ const buildPluginConfig = defineConfig({
   external: ['miniflare', 'workerd', '@cspotcode/source-map-support', 'lightningcss', 'esbuild', 'vite'],
 });
 
-export default [buildClientConfig, buildPluginConfig];
+export default [buildWorkerConfig, buildPluginConfig];

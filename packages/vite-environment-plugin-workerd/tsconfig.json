@@ -14,5 +14,5 @@
     "declarationMap": true
   },
   "include": ["src", ".eslintrc.js"],
-  "exclude": ["src/client"]
+  "exclude": ["src/worker"]
 }

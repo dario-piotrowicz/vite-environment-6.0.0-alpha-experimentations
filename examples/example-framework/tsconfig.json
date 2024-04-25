@@ -13,6 +13,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src", ".eslintrc.js"],
+  "include": ["src", ".eslintrc.js", "worker-configuration.d.ts"],
   "exclude": ["src/client"]
 }
