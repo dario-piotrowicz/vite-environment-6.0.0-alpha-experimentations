@@ -3,8 +3,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2015"],
-    "types": ["@cloudflare/workers-types/2023-07-01", "vite/client"],
+    "lib": ["ES2015", "DOM"],
+    "types": ["vite/client"],
     "resolveJsonModule": true,
     "moduleResolution": "Bundler",
     "checkJs": false,
@@ -13,6 +13,5 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["entry-workerd.ts", "src", ".eslintrc.js", "worker-configuration.d.ts"],
-  "exclude": ["src/client"]
+  "include": ["."]
 }
