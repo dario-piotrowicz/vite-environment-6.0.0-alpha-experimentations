@@ -18,6 +18,11 @@ export async function serverSideRender(env: Env) {
           </style>
         </head>
         <body>
+          <div style="display: flex; justify-content: space-around; padding: 0.05rem; margin-block: 0.1rem; font-size: 0.7rem">
+            <span>
+            <a href="https://github.com/vitejs/vite/discussions/16358" target="_blank">Vite Environment API</a> Experimentation</span>
+          </div>
+          <hr style="margin-top: 0" />
           <div style="display: flex; justify-content: space-between; padding: 0.25rem; margin-block: 0.15rem">
             <span>${getUserAgentText()}</span>${
               env
