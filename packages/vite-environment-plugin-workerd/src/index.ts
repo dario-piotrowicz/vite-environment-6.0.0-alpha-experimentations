@@ -1,7 +1,11 @@
-import { readFile } from 'fs/promises';
-import { resolve } from 'node:path';
-import { type DevEnvironment, type ResolvedConfig } from 'vite';
-import { Miniflare, Response as MiniflareResponse } from 'miniflare';
+import type { HMRChannel, DevEnvironment, ResolvedConfig } from 'vite';
+import {
+  MessageEvent,
+  Miniflare,
+  Response as MiniflareResponse,
+  TypedEventListener,
+} from 'miniflare';
+import { fileURLToPath } from 'node:url';
 
 export function viteEnvironmentPluginWorkerd() {
   return {
@@ -46,7 +50,93 @@ export async function createWorkerdDevEnvironment(
   name: string,
   config: ResolvedConfig,
 ): Promise<DevEnvironment> {
-  let mf: Miniflare|undefined;
+  const mf = new Miniflare({
+    modulesRoot: '/',
+    modules: [
+      {
+        type: 'ESModule',
+        path: fileURLToPath(new URL('./worker/index.js', import.meta.url)),
+      },
+    ],
+    unsafeEvalBinding: 'UNSAFE_EVAL',
+    compatibilityDate: '2024-02-08',
+    kvNamespaces: [
+      // TODO: we should read this from the toml file and not hardcode it
+      'MY_KV_NAMESPACE',
+    ],
+    bindings: {
+      root: config.root,
+    },
+    serviceBindings: {
+      __viteFetchModule: async request => {
+        const args = await request.json();
+        try {
+          const result = await devEnv.fetchModule(...(args as [any, any]));
+          return new MiniflareResponse(JSON.stringify(result));
+        } catch (error) {
+          console.error('[fetchModule]', args, error);
+          throw error;
+        }
+      },
+    },
+  });
+
+  const resp = await mf.dispatchFetch('http:0.0.0.0/__initModuleRunner', {
+    headers: {
+      upgrade: 'websocket',
+    },
+  });
+  if (!resp.ok) {
+    throw new Error('Error: failed to initialize the module runner! ');
+  }
+  const webSocket = resp.webSocket;
+  webSocket.accept();
+
+  const hotEventListenersMap = new Map<string, Set<Function>>();
+  let hotDispose: (() => void) | undefined;
+
+  const hot: HMRChannel = {
+    name,
+    listen() {
+      const listener: TypedEventListener<MessageEvent> = data => {
+        const payload = JSON.parse(data as unknown as string);
+        for (const f of hotEventListenersMap.get(payload.event)) {
+          f(payload.data);
+        }
+      };
+
+      webSocket.addEventListener('message', listener);
+      hotDispose = () => {
+        webSocket.removeEventListener('message', listener);
+      };
+    },
+    close() {
+      hotDispose?.();
+      hotDispose = undefined;
+    },
+    on(event: string, listener: (...args: any[]) => any) {
+      if (!hotEventListenersMap.get(event)) {
+        hotEventListenersMap.set(event, new Set());
+      }
+      hotEventListenersMap.get(event).add(listener);
+    },
+    off(event: string, listener: (...args: any[]) => any) {
+      hotEventListenersMap.get(event).delete(listener);
+    },
+    send(...args: any[]) {
+      let payload: any;
+      if (typeof args[0] === 'string') {
+        payload = {
+          type: 'custom',
+          event: args[0],
+          data: args[1],
+        };
+      } else {
+        payload = args[0];
+      }
+      webSocket.send(JSON.stringify(payload));
+    },
+  };
 
   // TODO: having `import { DevEnvironment } from "vite";` at the top of this file
   //       results in DevEnvironment being undefined... I'm not sure why, that should be investigated
@@ -61,23 +151,19 @@ export async function createWorkerdDevEnvironment(
     }
   }
 
-  const devEnv = new WorkerdDevEnvironmentImpl(name, config, {
-    /*hot*/
-  }); // <-- TODO: add hot
+  const devEnv = new WorkerdDevEnvironmentImpl(name, config, { hot });
 
   (devEnv as WorkerdDevEnvironment).api = {
-    createRequestDispatcher: getCreateRequestDispatcher(config),
+    createRequestDispatcher: getCreateRequestDispatcher(),
   };
 
-  function getCreateRequestDispatcher(config: ResolvedConfig) {
+  function getCreateRequestDispatcher() {
     const createRequestDispatcher: CreateRequestDispatcher = async ({
       entrypoint,
     }) => {
       // module is used to collect the cjs exports from the module evaluation
-      const dispatchRequestImplementation = await getClientDispatchRequest(
-        config.root,
-        entrypoint,
-      );
+      const dispatchRequestImplementation =
+        await getClientDispatchRequest(entrypoint);
 
       const dispatchRequest: DispatchRequest = async request => {
         return dispatchRequestImplementation(request);
@@ -92,53 +178,21 @@ export async function createWorkerdDevEnvironment(
    * Gets the `dispatchRequest` from the client (e.g. from the js running inside the workerd)
    */
   async function getClientDispatchRequest(
-    serverRoot: string,
     entrypoint: string,
-    // fetchModuleUrl: string,
   ): Promise<DispatchRequest> {
-    const script = await getClientScript(serverRoot, entrypoint);
-
-    mf ??= new Miniflare({
-      script,
-      modules: true,
-      unsafeEvalBinding: 'UNSAFE_EVAL',
-      compatibilityDate: '2024-02-08',
-      kvNamespaces: [
-        // TODO: we should read this from the toml file and not hardcode it
-        'MY_KV_NAMESPACE',
-      ],
-      serviceBindings: {
-        __viteFetchModule: async request => {
-          const args = await request.json();
-          try {
-            const result = await devEnv.fetchModule(...(args as [any, any]));
-            return new MiniflareResponse(JSON.stringify(result));
-          } catch (error) {
-            console.error('[fetchModule]', args, error);
-            throw error;
-          }
-        },
-      },
+    const resp = await mf.dispatchFetch('http:0.0.0.0/__setEntrypoint', {
+      method: 'POST',
+      body: JSON.stringify({
+        entrypoint,
+      }),
     });
+    if (!resp.ok) {
+      throw new Error('Error: failed to set the entrypoint!');
+    }
 
     return (req: Request) => {
-      return mf.dispatchFetch(`http://any.local${req.url}`);
+      return mf.dispatchFetch(`${req.url}`);
     };
-  }
-
-  /**
-   * gets the client script to be run in the vm, it also applies
-   * the various required string replacements
-   */
-  async function getClientScript(serverRoot: string, entrypoint: string) {
-    const workerPath = resolve(__dirname, './worker/index.js');
-    const workerContent = await readFile(workerPath, 'utf-8');
-
-    return workerContent
-      .replace(/__ROOT__/g, JSON.stringify(serverRoot))
-      .replace(/__ENTRYPOINT__/g, JSON.stringify(entrypoint));
-    // TODO 👇
-    // .replace(/__VITE_HMR_URL__/g, JSON.stringify(getHmrUrl(server)));
   }
 
   return devEnv;

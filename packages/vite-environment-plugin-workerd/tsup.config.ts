@@ -18,7 +18,7 @@ const buildPluginConfig = defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
   dts: true,
-  format: ['cjs'],
+  format: ['esm'],
   platform: 'node',
   external: ['miniflare', 'workerd', '@cspotcode/source-map-support', 'lightningcss', 'esbuild', 'vite'],
 });

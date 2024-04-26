@@ -1,8 +1,5 @@
 import { ModuleRunner } from 'vite/module-runner';
 
-declare const __ROOT__: string;
-declare const __ENTRYPOINT__: string;
-
 type Env = {
   UNSAFE_EVAL: {
     eval: (code: string, filename?: string) => any;
@@ -10,33 +7,56 @@ type Env = {
   __viteFetchModule: {
     fetch: (request: Request) => Promise<Response>;
   };
+  root: string;
 };
 
-let unsafeEval: {
-  eval: (code: string, ...args: any[]) => any;
-};
+let entrypoint: string|undefined;
+
+let hmrWebSocket: WebSocket|undefined;
 
 export default {
-  async fetch(req: Request, env: any) {
-    unsafeEval = env.UNSAFE_EVAL;
+  async fetch(req: Request, env: Env) {
+    console.log(`fetch: ${req.url}`);
+    const url = new URL(req.url);
 
-    const moduleRunner = getModuleRunner(env);
-    const entrypointModule = await moduleRunner.import(__ENTRYPOINT__);
+    if (req.method === 'POST' && url.pathname === '/__setEntrypoint') {
+      const { entrypoint: reqEntrypoint } = await req.json<{ entrypoint: string }>();
+      if(!reqEntrypoint) {
+        const error = 'Error: trying to set the entrypoint without passing a value for it';
+        return new Response(error, { status: 400, statusText: error });
+      }
+      entrypoint = reqEntrypoint;
+      return new Response(null);
+    }
+
+    if (url.pathname === '/__initModuleRunner') {
+      const pair = new WebSocketPair();
+      (pair[0] as any).accept();
+      hmrWebSocket = pair[0];
+      initModuleRunner(env);
+      return new Response(null, { status: 101, webSocket: pair[1] });
+    }
+
+    if(!entrypoint) {
+      throw new Error(`Error: the entrypoint hasn't been initialized `);
+    }
+
+    if(!moduleRunner) {
+      throw new Error(`Error: the moduleRunner hasn't been initialized`);
+    }
+
+    const entrypointModule = await moduleRunner.import(entrypoint);
     const fetch = entrypointModule.default.fetch;
-
     return fetch(req, env);
   },
 };
 
 let moduleRunner: ModuleRunner | undefined;
 
-function getModuleRunner(env: Env): ModuleRunner {
-  if (moduleRunner) {
-    return moduleRunner;
-  }
-  return (moduleRunner = new ModuleRunner(
+function initModuleRunner(env: Env) {
+  moduleRunner = new ModuleRunner(
     {
-      root: __ROOT__,
+      root: env.root,
       transport: {
         fetchModule: async (...args) => {
           const response = await env.__viteFetchModule.fetch(
@@ -49,7 +69,19 @@ function getModuleRunner(env: Env): ModuleRunner {
           return result as any;
         },
       },
-      hmr: false, // TODO
+      hmr: {
+        connection: {
+          isReady: () => true,
+          onUpdate(callback) {
+            hmrWebSocket.addEventListener("message", (event) => {
+              callback(JSON.parse(event.data));
+            });
+          },
+          send(messages) {
+            hmrWebSocket.send(JSON.stringify(messages));
+          },
+        },
+      },
     },
     {
       runInlinedModule: async (context, transformed, id) => {
@@ -65,5 +97,5 @@ function getModuleRunner(env: Env): ModuleRunner {
         throw new Error(`runExternalModule: ${filepath}`);
       },
     },
-  ));
+  );
 }
