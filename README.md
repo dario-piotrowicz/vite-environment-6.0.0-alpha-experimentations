@@ -1,6 +1,6 @@
 # Vite Environment 6.0.0 experimentations
 
-Experimentations based on the [_experimental_ Vite Runtime API](https://deploy-preview-16471--vite-docs-main.netlify.app/guide/api-vite-environment.html) being worked on for `vite@6.0.0-alpha.x`
+Experimentations based on the [_experimental_ Vite Environment API](https://deploy-preview-16471--vite-docs-main.netlify.app/guide/api-vite-environment.html) being worked on for `vite@6.0.0-alpha.x`
 
 > This is a followup after the [Vite Runtime 5.1 experimentations](https://github.com/dario-piotrowicz/vite-runtime-5.1-experimentations) (which instead investigated the Vite Runtime API).
 
