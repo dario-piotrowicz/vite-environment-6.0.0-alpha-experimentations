@@ -16,7 +16,6 @@ let hmrWebSocket: WebSocket|undefined;
 
 export default {
   async fetch(req: Request, env: Env) {
-    console.log(`fetch: ${req.url}`);
     const url = new URL(req.url);
 
     if (req.method === 'POST' && url.pathname === '/__setEntrypoint') {
@@ -94,8 +93,9 @@ function initModuleRunner(env: Env) {
         Object.freeze(context.__vite_ssr_exports__);
       },
       async runExternalModule(filepath) {
-        throw new Error(`runExternalModule: ${filepath}`);
+        return import(filepath);
       },
     },
   );
+  globalThis.__viteModuleRunner = moduleRunner;
 }

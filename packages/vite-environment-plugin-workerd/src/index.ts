@@ -46,10 +46,16 @@ export type WorkerdDevEnvironment = DevEnvironment & {
   };
 };
 
+let workerdEnv: DevEnvironment|null = null;
+
 export async function createWorkerdDevEnvironment(
   name: string,
   config: ResolvedConfig,
 ): Promise<DevEnvironment> {
+  if(workerdEnv) {
+    return workerdEnv;
+  }
+
   const mf = new Miniflare({
     modulesRoot: '/',
     modules: [
@@ -60,9 +66,11 @@ export async function createWorkerdDevEnvironment(
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
+    compatibilityFlags: ['nodejs_compat'],
     kvNamespaces: [
       // TODO: we should read this from the toml file and not hardcode it
       'MY_KV_NAMESPACE',
+      'MY_KV'
     ],
     bindings: {
       root: config.root,
@@ -195,5 +203,6 @@ export async function createWorkerdDevEnvironment(
     };
   }
 
+  workerdEnv = devEnv;
   return devEnv;
 }
