@@ -11,15 +11,14 @@ export function exampleFramework({ entrypoint }: { entrypoint: string}) {
 
       return async () => {
         server.middlewares.use(async (req: http.IncomingMessage, res: http.ServerResponse) => {
-
-          const dispatchRequest = await devEnv.api.createRequestDispatcher({
+          const handler = await devEnv.api.getWorkerdHandler({
             entrypoint,
           });
 
             const url = `http://localhost${req.url ?? '/'}`;
 
             const nativeReq = new Request(url);
-            const resp = await dispatchRequest(nativeReq);
+            const resp = await handler(nativeReq);
             const html = await resp.text();
             const transformedHtml = await server.transformIndexHtml(
               url,

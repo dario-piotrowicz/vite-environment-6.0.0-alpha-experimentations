@@ -68,8 +68,8 @@ importers:
         specifier: ^4.20240222.0
         version: 4.20240423.0
       '@remix-run/dev':
-        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-dario-6
-        version: /@dario-hacking/remix-run-dev@2.9.1-dario-6(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0)
+        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-0
+        version: /@dario-hacking/remix-run-dev@2.9.1-vite-env-0(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0)
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -162,8 +162,8 @@ importers:
         specifier: ^4.20240222.0
         version: 4.20240423.0
       '@remix-run/dev':
-        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-dario-6
-        version: /@dario-hacking/remix-run-dev@2.9.1-dario-6(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0)
+        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-0
+        version: /@dario-hacking/remix-run-dev@2.9.1-vite-env-0(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0)
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -706,8 +706,8 @@ packages:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  /@dario-hacking/remix-run-dev@2.9.1-dario-6(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0):
-    resolution: {integrity: sha512-xoLbhKzVxJMZWJEvYrKXUKI3+lRenq0UMkqf9SiB7I5pZbaV2MyixBS+0QGKqbBAc8CMF53AEiEts/P0y5ROKg==}
+  /@dario-hacking/remix-run-dev@2.9.1-vite-env-0(@remix-run/react@2.8.0)(typescript@5.4.5)(vite@6.0.0-alpha.3)(wrangler@3.30.0):
+    resolution: {integrity: sha512-Hvn1+mnwiAr0IwFIHFxBCk9yyzOHVvb0HuzqtMeSuSt1IdQpfhpE2gmaulRfyZaNrpmfFK87SHebTYS/1fyolQ==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:

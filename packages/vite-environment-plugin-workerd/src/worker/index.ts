@@ -44,7 +44,7 @@ export default {
     }
 
     // TODO: from env we can filter out the bindings we use to integrate with the vite environment
-    return entrypoint.default(req, env, ctx);
+    return entrypoint.default.fetch(req, env, ctx);
   },
 };
 

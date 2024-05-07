@@ -9,6 +9,14 @@ import {
 } from 'miniflare';
 import { fileURLToPath } from 'node:url';
 
+type WorkerHandler = (req: Request) => Response | Promise<Response>;
+
+export type WorkerdDevEnvironment = DevEnvironment & {
+  api: {
+    getWorkerdHandler: ({ entrypoint }: { entrypoint: string }) => Promise<WorkerHandler>;
+  };
+};
+
 export function viteEnvironmentPluginWorkerd() {
   return {
     name: 'vite-environment-plugin-workerd',
@@ -87,11 +95,11 @@ async function createWorkerdDevEnvironment(
 
   const hot = webSocket ? createHMRChannel(webSocket!, name) : false;
 
-  const devEnv = new DevEnvironment(name, config, { hot });
+  const devEnv = new DevEnvironment(name, config, { hot }) as WorkerdDevEnvironment;
 
   let entrypointSet = false;
-  (devEnv as any).api = {
-    async getWorkerdHandler({ entrypoint }: { entrypoint: string }) {
+  devEnv.api = {
+    async getWorkerdHandler({ entrypoint }) {
       if (!entrypointSet) {
         const resp = await mf.dispatchFetch('http:0.0.0.0/__set-entrypoint', {
           headers: [['x-vite-workerd-entrypoint', entrypoint]],
