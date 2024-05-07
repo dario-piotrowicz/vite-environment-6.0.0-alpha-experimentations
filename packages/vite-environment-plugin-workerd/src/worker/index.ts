@@ -1,6 +1,7 @@
 import { ModuleRunner } from 'vite/module-runner';
 
 type Env = {
+  ROOT: string;
   UNSAFE_EVAL: {
     eval: (code: string, filename?: string) => any;
   };
@@ -10,52 +11,50 @@ type Env = {
   root: string;
 };
 
-let entrypoint: string|undefined;
-
-let hmrWebSocket: WebSocket|undefined;
+let entrypoint: any;
+let moduleRunner: ModuleRunner;
+let hmrWebSocket: WebSocket;
 
 export default {
-  async fetch(req: Request, env: Env) {
+  async fetch(req: Request, env: Env, ctx: any) {
     const url = new URL(req.url);
 
-    if (req.method === 'POST' && url.pathname === '/__setEntrypoint') {
-      const { entrypoint: reqEntrypoint } = await req.json<{ entrypoint: string }>();
-      if(!reqEntrypoint) {
-        const error = 'Error: trying to set the entrypoint without passing a value for it';
-        return new Response(error, { status: 400, statusText: error });
-      }
-      entrypoint = reqEntrypoint;
-      return new Response(null);
-    }
-
-    if (url.pathname === '/__initModuleRunner') {
+    if (url.pathname === '/__init-module-runner') {
       const pair = new WebSocketPair();
+
       (pair[0] as any).accept();
       hmrWebSocket = pair[0];
-      initModuleRunner(env);
+      moduleRunner = await getModuleRunner(env);
       return new Response(null, { status: 101, webSocket: pair[1] });
     }
 
-    if(!entrypoint) {
-      throw new Error(`Error: the entrypoint hasn't been initialized `);
+    if (url.pathname === '/__set-entrypoint') {
+      const viteWorkerdEntrypoint = req.headers.get(
+        'x-vite-workerd-entrypoint',
+      );
+      try {
+        entrypoint = await moduleRunner.import(viteWorkerdEntrypoint!);
+      } catch (error) {
+        return new Response('entrypoint not set', {
+          status: 500,
+          statusText: `${error}`,
+        });
+      }
+      return new Response('entrypoint successfully set');
     }
 
-    if(!moduleRunner) {
-      throw new Error(`Error: the moduleRunner hasn't been initialized`);
-    }
-
-    const entrypointModule = await moduleRunner.import(entrypoint);
-    const fetch = entrypointModule.default.fetch;
-    return fetch(req, env);
+    // TODO: from env we can filter out the bindings we use to integrate with the vite environment
+    return entrypoint.default(req, env, ctx);
   },
 };
 
-let moduleRunner: ModuleRunner | undefined;
+let _moduleRunner: ModuleRunner | undefined;
 
-function initModuleRunner(env: Env) {
-  moduleRunner = new ModuleRunner(
+async function getModuleRunner(env: Env) {
+  if (_moduleRunner) return _moduleRunner;
+  _moduleRunner = new ModuleRunner(
     {
-      root: env.root,
+      root: env.ROOT,
       transport: {
         fetchModule: async (...args) => {
           const response = await env.__viteFetchModule.fetch(
@@ -72,7 +71,7 @@ function initModuleRunner(env: Env) {
         connection: {
           isReady: () => true,
           onUpdate(callback) {
-            hmrWebSocket.addEventListener("message", (event) => {
+            hmrWebSocket.addEventListener('message', event => {
               callback(JSON.parse(event.data));
             });
           },
@@ -97,5 +96,5 @@ function initModuleRunner(env: Env) {
       },
     },
   );
-  globalThis.__viteModuleRunner = moduleRunner;
+  return _moduleRunner;
 }
