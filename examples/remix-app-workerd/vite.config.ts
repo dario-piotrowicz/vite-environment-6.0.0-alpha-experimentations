@@ -9,9 +9,7 @@ import { viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
 export default defineConfig({
   plugins: [
     viteEnvironmentPluginWorkerd(),
-    remix({
-      runInWorkerd: true,
-    }),
+    remix(),
     tsconfigPaths(),
   ],
 });
