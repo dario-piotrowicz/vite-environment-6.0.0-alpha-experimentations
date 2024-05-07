@@ -1,9 +1,11 @@
-import type { HMRChannel, DevEnvironment, ResolvedConfig } from 'vite';
+import { DevEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
+
 import {
-  MessageEvent,
   Miniflare,
   Response as MiniflareResponse,
-  TypedEventListener,
+  type MessageEvent,
+  type TypedEventListener,
+  type WebSocket,
 } from 'miniflare';
 import { fileURLToPath } from 'node:url';
 
@@ -30,48 +32,33 @@ export function viteEnvironmentPluginWorkerd() {
   };
 }
 
-export type CreateRequestDispatcher = (
-  options: CreateRequestDispatcherOptions,
-) => Promise<DispatchRequest>;
-
-export type CreateRequestDispatcherOptions = {
-  entrypoint: string;
-};
-
-export type DispatchRequest = (req: Request) => Response | Promise<Response>;
-
-export type WorkerdDevEnvironment = DevEnvironment & {
-  api: {
-    createRequestDispatcher: CreateRequestDispatcher;
-  };
-};
-
-export async function createWorkerdDevEnvironment(
+async function createWorkerdDevEnvironment(
   name: string,
   config: ResolvedConfig,
 ): Promise<DevEnvironment> {
   const mf = new Miniflare({
-    modulesRoot: '/',
+    modulesRoot: fileURLToPath(new URL('./', import.meta.url)),
     modules: [
       {
         type: 'ESModule',
-        path: fileURLToPath(new URL('./worker/index.js', import.meta.url)),
+        path: fileURLToPath(
+          new URL('worker/index.js', import.meta.url),
+        ),
       },
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
-    kvNamespaces: [
-      // TODO: we should read this from the toml file and not hardcode it
-      'MY_KV_NAMESPACE',
-    ],
+    compatibilityFlags: ['nodejs_compat'],
+    // TODO: we should read this from a toml file and not hardcode it
+    kvNamespaces: ['MY_KV'],
     bindings: {
-      root: config.root,
+      ROOT: config.root,
     },
     serviceBindings: {
       __viteFetchModule: async request => {
         const args = await request.json();
         try {
-          const result = await devEnv.fetchModule(...(args as [any, any]));
+          const result: any = await devEnv.fetchModule(...(args as [any, any]));
           return new MiniflareResponse(JSON.stringify(result));
         } catch (error) {
           console.error('[fetchModule]', args, error);
@@ -81,33 +68,84 @@ export async function createWorkerdDevEnvironment(
     },
   });
 
-  const resp = await mf.dispatchFetch('http:0.0.0.0/__initModuleRunner', {
+  const resp = await mf.dispatchFetch('http:0.0.0.0/__init-module-runner', {
     headers: {
       upgrade: 'websocket',
     },
   });
   if (!resp.ok) {
-    throw new Error('Error: failed to initialize the module runner! ');
+    throw new Error('Error: failed to initialize the module runner!');
   }
+
   const webSocket = resp.webSocket;
+
+  if (!webSocket) {
+    console.error(
+      '\x1b[33m⚠️ failed to create a websocket for HMR (hmr disabled)\x1b[0m',
+    );
+  }
+
+  const hot = webSocket ? createHMRChannel(webSocket!, name) : false;
+
+  const devEnv = new DevEnvironment(name, config, { hot });
+
+  let entrypointSet = false;
+  (devEnv as any).api = {
+    async getWorkerdHandler({ entrypoint }: { entrypoint: string }) {
+      if (!entrypointSet) {
+        const resp = await mf.dispatchFetch('http:0.0.0.0/__set-entrypoint', {
+          headers: [['x-vite-workerd-entrypoint', entrypoint]],
+        });
+        if (resp.ok) {
+          entrypointSet = resp.ok;
+        } else {
+          throw new Error(
+            `failed to set entrypoint (error: "${resp.statusText}")`,
+          );
+        }
+      }
+
+      return async (req: Request) => {
+        // TODO: ideally we should pass the request itself with close to no tweaks needed... this needs to be investigated
+        return await mf.dispatchFetch(req.url, {
+          method: req.method,
+          body: req.body,
+          duplex: 'half',
+          headers: [
+            // note: we disable encoding since this causes issues when the miniflare response
+            //       gets piped into the node one
+            ['accept-encoding', 'identity'],
+            ...req.headers,
+          ],
+        });
+      };
+    },
+  };
+
+  return devEnv;
+}
+function createHMRChannel(webSocket: WebSocket, name: string): HMRChannel {
   webSocket.accept();
 
-  const hotEventListenersMap = new Map<string, Set<Function>>();
+  const hotEventListenersMap = new Map<
+    string,
+    Set<(...args: any[]) => unknown>
+  >();
   let hotDispose: (() => void) | undefined;
 
-  const hot: HMRChannel = {
+  return {
     name,
     listen() {
       const listener: TypedEventListener<MessageEvent> = data => {
         const payload = JSON.parse(data as unknown as string);
-        for (const f of hotEventListenersMap.get(payload.event)) {
+        for (const f of hotEventListenersMap.get(payload.event)!) {
           f(payload.data);
         }
       };
 
-      webSocket.addEventListener('message', listener);
+      webSocket.addEventListener('message', listener as any);
       hotDispose = () => {
-        webSocket.removeEventListener('message', listener);
+        webSocket.removeEventListener('message', listener as any);
       };
     },
     close() {
@@ -118,10 +156,10 @@ export async function createWorkerdDevEnvironment(
       if (!hotEventListenersMap.get(event)) {
         hotEventListenersMap.set(event, new Set());
       }
-      hotEventListenersMap.get(event).add(listener);
+      hotEventListenersMap.get(event)!.add(listener);
     },
     off(event: string, listener: (...args: any[]) => any) {
-      hotEventListenersMap.get(event).delete(listener);
+      hotEventListenersMap.get(event)!.delete(listener);
     },
     send(...args: any[]) {
       let payload: any;
@@ -137,63 +175,4 @@ export async function createWorkerdDevEnvironment(
       webSocket.send(JSON.stringify(payload));
     },
   };
-
-  // TODO: having `import { DevEnvironment } from "vite";` at the top of this file
-  //       results in DevEnvironment being undefined... I'm not sure why, that should be investigated
-  const DevEnvironment = await import('vite').then(
-    ({ DevEnvironment }) => DevEnvironment,
-  )!;
-
-  class WorkerdDevEnvironmentImpl extends DevEnvironment {
-    override async close() {
-      await super.close();
-      await mf?.dispose();
-    }
-  }
-
-  const devEnv = new WorkerdDevEnvironmentImpl(name, config, { hot });
-
-  (devEnv as WorkerdDevEnvironment).api = {
-    createRequestDispatcher: getCreateRequestDispatcher(),
-  };
-
-  function getCreateRequestDispatcher() {
-    const createRequestDispatcher: CreateRequestDispatcher = async ({
-      entrypoint,
-    }) => {
-      // module is used to collect the cjs exports from the module evaluation
-      const dispatchRequestImplementation =
-        await getClientDispatchRequest(entrypoint);
-
-      const dispatchRequest: DispatchRequest = async request => {
-        return dispatchRequestImplementation(request);
-      };
-      return dispatchRequest;
-    };
-
-    return createRequestDispatcher;
-  }
-
-  /**
-   * Gets the `dispatchRequest` from the client (e.g. from the js running inside the workerd)
-   */
-  async function getClientDispatchRequest(
-    entrypoint: string,
-  ): Promise<DispatchRequest> {
-    const resp = await mf.dispatchFetch('http:0.0.0.0/__setEntrypoint', {
-      method: 'POST',
-      body: JSON.stringify({
-        entrypoint,
-      }),
-    });
-    if (!resp.ok) {
-      throw new Error('Error: failed to set the entrypoint!');
-    }
-
-    return (req: Request) => {
-      return mf.dispatchFetch(`${req.url}`);
-    };
-  }
-
-  return devEnv;
 }
