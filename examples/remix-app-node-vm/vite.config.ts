@@ -7,9 +7,5 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { viteEnvironmentPluginNodeVM } from 'vite-environment-plugin-node-vm';
 
 export default defineConfig({
-  plugins: [
-    viteEnvironmentPluginNodeVM(),
-    remix(),
-    tsconfigPaths(),
-  ],
+  plugins: [viteEnvironmentPluginNodeVM(), remix(), tsconfigPaths()],
 });

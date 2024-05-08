@@ -13,6 +13,11 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["entry-workerd.ts", "src", ".eslintrc.js", "worker-configuration.d.ts"],
+  "include": [
+    "entry-workerd.ts",
+    "src",
+    ".eslintrc.js",
+    "worker-configuration.d.ts"
+  ],
   "exclude": ["src/client"]
 }

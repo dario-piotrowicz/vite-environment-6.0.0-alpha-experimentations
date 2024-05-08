@@ -20,7 +20,14 @@ const buildPluginConfig = defineConfig({
   dts: true,
   format: ['esm'],
   platform: 'node',
-  external: ['miniflare', 'workerd', '@cspotcode/source-map-support', 'lightningcss', 'esbuild', 'vite'],
+  external: [
+    'miniflare',
+    'workerd',
+    '@cspotcode/source-map-support',
+    'lightningcss',
+    'esbuild',
+    'vite',
+  ],
 });
 
 export default [buildWorkerConfig, buildPluginConfig];

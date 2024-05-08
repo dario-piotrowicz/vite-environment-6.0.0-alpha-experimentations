@@ -6,7 +6,12 @@ const buildPluginConfig = defineConfig({
   dts: true,
   format: ['esm'],
   platform: 'node',
-  external: ['@cspotcode/source-map-support', 'lightningcss', 'esbuild', 'vite'],
+  external: [
+    '@cspotcode/source-map-support',
+    'lightningcss',
+    'esbuild',
+    'vite',
+  ],
 });
 
 export default [buildPluginConfig];

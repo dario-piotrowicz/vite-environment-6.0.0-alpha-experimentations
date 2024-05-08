@@ -13,7 +13,11 @@ type WorkerHandler = (req: Request) => Response | Promise<Response>;
 
 export type WorkerdDevEnvironment = DevEnvironment & {
   api: {
-    getWorkerdHandler: ({ entrypoint }: { entrypoint: string }) => Promise<WorkerHandler>;
+    getWorkerdHandler: ({
+      entrypoint,
+    }: {
+      entrypoint: string;
+    }) => Promise<WorkerHandler>;
   };
 };
 
@@ -49,9 +53,7 @@ async function createWorkerdDevEnvironment(
     modules: [
       {
         type: 'ESModule',
-        path: fileURLToPath(
-          new URL('worker/index.js', import.meta.url),
-        ),
+        path: fileURLToPath(new URL('worker/index.js', import.meta.url)),
       },
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
@@ -95,7 +97,9 @@ async function createWorkerdDevEnvironment(
 
   const hot = webSocket ? createHMRChannel(webSocket!, name) : false;
 
-  const devEnv = new DevEnvironment(name, config, { hot }) as WorkerdDevEnvironment;
+  const devEnv = new DevEnvironment(name, config, {
+    hot,
+  }) as WorkerdDevEnvironment;
 
   let entrypointSet = false;
   devEnv.api = {

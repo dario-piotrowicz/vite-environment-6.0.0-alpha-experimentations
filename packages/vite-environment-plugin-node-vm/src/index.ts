@@ -1,21 +1,21 @@
-import { DevEnvironment, type HMRChannel, type ResolvedConfig } from "vite";
+import { DevEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
 
-import EventEmitter from "node:events";
+import EventEmitter from 'node:events';
 
-import { runInContext, createContext } from "node:vm";
+import { runInContext, createContext } from 'node:vm';
 
 export function viteEnvironmentPluginNodeVM() {
   return {
-    name: "vite-environment-plugin-node-vm",
+    name: 'vite-environment-plugin-node-vm',
 
     async config() {
       return {
         environments: {
-          "node-vm": {
+          'node-vm': {
             dev: {
               createEnvironment(
                 name: string,
-                config: ResolvedConfig
+                config: ResolvedConfig,
               ): Promise<DevEnvironment> {
                 return createNodeVmDevEnvironment(name, config);
               },
@@ -29,7 +29,7 @@ export function viteEnvironmentPluginNodeVM() {
 
 async function createNodeVmDevEnvironment(
   name: string,
-  config: any
+  config: any,
 ): Promise<DevEnvironment> {
   const eventEmitter = new EventEmitter();
 
@@ -42,9 +42,9 @@ async function createNodeVmDevEnvironment(
     console: {
       ...console,
       log: (...args: any[]) => {
-        console.log("\nlog from node VM ========");
+        console.log('\nlog from node VM ========');
         console.log(...args);
-        console.log("=========================\n");
+        console.log('=========================\n');
       },
     },
     devEnv,
@@ -110,7 +110,7 @@ async function createNodeVmDevEnvironment(
 
   runInContext(script, vmContext, {
     // hack to get dynamic imports to work in node vms
-    importModuleDynamically: (specifier) => {
+    importModuleDynamically: specifier => {
       return import(specifier) as any;
     },
   });
@@ -120,7 +120,7 @@ async function createNodeVmDevEnvironment(
 
 function createDummyHMRChannel(
   eventEmitter: EventEmitter,
-  name: string
+  name: string,
 ): HMRChannel {
   let hotDispose: (() => void) | undefined;
 
@@ -139,9 +139,9 @@ function createDummyHMRChannel(
         }
       };
 
-      eventEmitter.on("message", listener as any);
+      eventEmitter.on('message', listener as any);
       hotDispose = () => {
-        eventEmitter.off("message", listener as any);
+        eventEmitter.off('message', listener as any);
       };
     },
     close() {
@@ -159,16 +159,16 @@ function createDummyHMRChannel(
     },
     send(...args: any[]) {
       let payload: any;
-      if (typeof args[0] === "string") {
+      if (typeof args[0] === 'string') {
         payload = {
-          type: "custom",
+          type: 'custom',
           event: args[0],
           data: args[1],
         };
       } else {
         payload = args[0];
       }
-      eventEmitter.emit("message", JSON.stringify(payload));
+      eventEmitter.emit('message', JSON.stringify(payload));
     },
   };
 }
@@ -177,6 +177,10 @@ type NodeVMHandler = (req: Request) => Response | Promise<Response>;
 
 export type NodeVMDevEnvironment = DevEnvironment & {
   api: {
-    getNodeHandler: ({ entrypoint }: { entrypoint: string }) => Promise<NodeVMHandler>;
+    getNodeHandler: ({
+      entrypoint,
+    }: {
+      entrypoint: string;
+    }) => Promise<NodeVMHandler>;
   };
 };

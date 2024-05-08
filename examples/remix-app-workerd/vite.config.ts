@@ -7,9 +7,5 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
 
 export default defineConfig({
-  plugins: [
-    viteEnvironmentPluginWorkerd(),
-    remix(),
-    tsconfigPaths(),
-  ],
+  plugins: [viteEnvironmentPluginWorkerd(), remix(), tsconfigPaths()],
 });
