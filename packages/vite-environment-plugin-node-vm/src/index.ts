@@ -33,7 +33,7 @@ async function createNodeVmDevEnvironment(
 ): Promise<DevEnvironment> {
   const eventEmitter = new EventEmitter();
 
-  const hot = createDummyHMRChannel(eventEmitter, name);
+  const hot = createSimpleHMRChannel(eventEmitter, name);
 
   const devEnv = new DevEnvironment(name, config, { hot });
 
@@ -118,7 +118,7 @@ async function createNodeVmDevEnvironment(
   return devEnv;
 }
 
-function createDummyHMRChannel(
+function createSimpleHMRChannel(
   eventEmitter: EventEmitter,
   name: string,
 ): HMRChannel {
