@@ -27,6 +27,9 @@ importers:
       vite:
         specifier: ^6.0.0-alpha
         version: 6.0.0-alpha.3(@types/node@20.12.7)
+      vite-environment-plugin-node-vm:
+        specifier: workspace:*
+        version: link:../../packages/vite-environment-plugin-node-vm
       vite-environment-plugin-workerd:
         specifier: workspace:*
         version: link:../../packages/vite-environment-plugin-workerd

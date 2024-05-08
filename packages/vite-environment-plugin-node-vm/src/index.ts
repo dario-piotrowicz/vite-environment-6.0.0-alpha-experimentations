@@ -172,3 +172,11 @@ function createDummyHMRChannel(
     },
   };
 }
+
+type NodeVMHandler = (req: Request) => Response | Promise<Response>;
+
+export type NodeVMDevEnvironment = DevEnvironment & {
+  api: {
+    getNodeHandler: ({ entrypoint }: { entrypoint: string }) => Promise<NodeVMHandler>;
+  };
+};

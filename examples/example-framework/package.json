@@ -2,7 +2,8 @@
   "name": "example-framework",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:workerd": "vite_env='workerd' vite",
+    "dev:node_vm": "NODE_OPTIONS='--experimental-vm-modules' vite_env='node-vm' vite",
     "build": "vite build",
     "preview": "vite preview",
     "cf-typegen": "wrangler types"
@@ -10,7 +11,8 @@
   "devDependencies": {
     "miniflare": "^3.20240129.3",
     "vite": "^6.0.0-alpha",
-    "vite-environment-plugin-workerd": "workspace:*"
+    "vite-environment-plugin-workerd": "workspace:*",
+    "vite-environment-plugin-node-vm": "workspace:*"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",
