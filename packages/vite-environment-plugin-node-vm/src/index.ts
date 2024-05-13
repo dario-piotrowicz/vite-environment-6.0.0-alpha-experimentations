@@ -51,7 +51,6 @@ export async function nodeVMEnvironmentProvider(options: NodeVMEnvironmentProvid
         name: string,
         config: ResolvedConfig,
       ): Promise<BuildEnvironment> {
-        // TODO: this should return an environment for build not dev
         return createNodeVmBuildEnvironment(name, config);
       }
     },
