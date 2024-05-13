@@ -4,25 +4,49 @@ import EventEmitter from 'node:events';
 
 import { runInContext, createContext } from 'node:vm';
 
-export function viteEnvironmentPluginNodeVM() {
-  return {
-    name: 'vite-environment-plugin-node-vm',
+export type NodeVMEnvironmentProviderOptions = {};
 
-    async config() {
-      return {
-        environments: {
-          'node-vm': {
-            dev: {
-              createEnvironment(
-                name: string,
-                config: ResolvedConfig,
-              ): Promise<DevEnvironment> {
-                return createNodeVmDevEnvironment(name, config);
-              },
-            },
-          },
-        },
-      };
+/**
+ * Metadata regarding the environment that consumers can use to get more information about the env when needed
+ */
+export type EnvironmentMetadata = {
+  name: string;
+}
+
+export type ViteEnvironmentProvider = {
+  metadata: EnvironmentMetadata;
+} &
+// Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+//       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
+//       they can just pick from/tweak the ViteEnvironmentProvider by themselves
+Record<'dev'|'build', {
+  createEnvironment(
+    name: string,
+    config: ResolvedConfig,
+  ): Promise<DevEnvironment>;
+}>;
+
+export async function nodeVMEnvironmentProvider(options: NodeVMEnvironmentProviderOptions = {}): Promise<ViteEnvironmentProvider> {
+  return {
+    metadata: {
+      name: 'node-vm',
+    },
+    dev: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment> {
+        return createNodeVmDevEnvironment(name, config);
+      }
+    },
+    build: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment> {
+        // TODO: this should return an environment for build not dev
+        return createNodeVmDevEnvironment(name, config);
+      }
     },
   };
 }

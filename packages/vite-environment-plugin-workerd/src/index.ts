@@ -21,25 +21,54 @@ export type WorkerdDevEnvironment = DevEnvironment & {
   };
 };
 
-export function viteEnvironmentPluginWorkerd() {
-  return {
-    name: 'vite-environment-plugin-workerd',
+export type WorkerdEnvironmentProviderOptions = {
+  config?: string;
+};
 
-    async config() {
-      return {
-        environments: {
-          workerd: {
-            dev: {
-              createEnvironment(
-                name: string,
-                config: ResolvedConfig,
-              ): Promise<DevEnvironment> {
-                return createWorkerdDevEnvironment(name, config);
-              },
-            },
-          },
-        },
-      };
+/**
+ * Metadata regarding the environment that consumers can use to get more information about the env when needed
+ */
+export type EnvironmentMetadata = {
+  name: string;
+}
+
+export type ViteEnvironmentProvider = {
+  metadata: EnvironmentMetadata;
+} &
+// Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+//       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
+//       they can just pick from/tweak the ViteEnvironmentProvider by themselves
+Record<'dev'|'build', {
+  createEnvironment(
+    name: string,
+    config: ResolvedConfig,
+  ): Promise<DevEnvironment>;
+}>;
+export async function workerdEnvironmentProvider(options: WorkerdEnvironmentProviderOptions = {}): Promise<ViteEnvironmentProvider> {
+  // we're not really reading the configuration, the following console.log
+  // just exemplifies such workflow
+  console.log(`(pretend that we're...) reading configuration from ${options.config}...`);
+
+  return {
+    metadata: {
+      name: 'workerd',
+    },
+    dev: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment> {
+        return createWorkerdDevEnvironment(name, config);
+      }
+    },
+    build: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment> {
+        // TODO: this should return an environment for build not dev
+        return createWorkerdDevEnvironment(name, config);
+      }
     },
   };
 }
