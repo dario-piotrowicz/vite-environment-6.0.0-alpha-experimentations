@@ -1,4 +1,9 @@
-import { DevEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
+import {
+  DevEnvironment,
+  BuildEnvironment,
+  type HMRChannel,
+  type ResolvedConfig,
+} from 'vite';
 
 import {
   Miniflare,
@@ -30,24 +35,36 @@ export type WorkerdEnvironmentProviderOptions = {
  */
 export type EnvironmentMetadata = {
   name: string;
-}
+};
 
 export type ViteEnvironmentProvider = {
   metadata: EnvironmentMetadata;
-} &
-// Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+} & // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
 //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
 //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
-Record<'dev'|'build', {
-  createEnvironment(
-    name: string,
-    config: ResolvedConfig,
-  ): Promise<DevEnvironment>;
-}>;
-export async function workerdEnvironmentProvider(options: WorkerdEnvironmentProviderOptions = {}): Promise<ViteEnvironmentProvider> {
+{
+  dev: {
+    createEnvironment(
+      name: string,
+      config: ResolvedConfig,
+    ): Promise<DevEnvironment>;
+  };
+  build: {
+    createEnvironment(
+      name: string,
+      config: ResolvedConfig,
+    ): Promise<BuildEnvironment>;
+  };
+};
+
+export async function workerdEnvironmentProvider(
+  options: WorkerdEnvironmentProviderOptions = {},
+): Promise<ViteEnvironmentProvider> {
   // we're not really reading the configuration, the following console.log
   // just exemplifies such workflow
-  console.log(`(pretend that we're...) reading configuration from ${options.config}...`);
+  console.log(
+    `(pretend that we're...) reading configuration from ${options.config}...`,
+  );
 
   return {
     metadata: {
@@ -59,18 +76,26 @@ export async function workerdEnvironmentProvider(options: WorkerdEnvironmentProv
         config: ResolvedConfig,
       ): Promise<DevEnvironment> {
         return createWorkerdDevEnvironment(name, config);
-      }
+      },
     },
     build: {
       createEnvironment(
         name: string,
         config: ResolvedConfig,
-      ): Promise<DevEnvironment> {
-        // TODO: this should return an environment for build not dev
-        return createWorkerdDevEnvironment(name, config);
-      }
+      ): Promise<BuildEnvironment> {
+        return createWorkerdBuildEnvironment(name, config);
+      },
     },
   };
+}
+
+async function createWorkerdBuildEnvironment(
+  name: string,
+  config: ResolvedConfig,
+): Promise<BuildEnvironment> {
+  const buildEnv = new BuildEnvironment(name, config);
+  // Nothing too special to do here, the default build env is probably ok for now
+  return buildEnv;
 }
 
 async function createWorkerdDevEnvironment(

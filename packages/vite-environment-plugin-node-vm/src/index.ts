@@ -1,4 +1,4 @@
-import { DevEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
+import { DevEnvironment, BuildEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
 
 import EventEmitter from 'node:events';
 
@@ -11,20 +11,27 @@ export type NodeVMEnvironmentProviderOptions = {};
  */
 export type EnvironmentMetadata = {
   name: string;
-}
+};
 
 export type ViteEnvironmentProvider = {
   metadata: EnvironmentMetadata;
-} &
-// Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+} & // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
 //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
 //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
-Record<'dev'|'build', {
-  createEnvironment(
-    name: string,
-    config: ResolvedConfig,
-  ): Promise<DevEnvironment>;
-}>;
+{
+  dev: {
+    createEnvironment(
+      name: string,
+      config: ResolvedConfig,
+    ): Promise<DevEnvironment>;
+  };
+  build: {
+    createEnvironment(
+      name: string,
+      config: ResolvedConfig,
+    ): Promise<BuildEnvironment>;
+  };
+};
 
 export async function nodeVMEnvironmentProvider(options: NodeVMEnvironmentProviderOptions = {}): Promise<ViteEnvironmentProvider> {
   return {
@@ -43,12 +50,21 @@ export async function nodeVMEnvironmentProvider(options: NodeVMEnvironmentProvid
       createEnvironment(
         name: string,
         config: ResolvedConfig,
-      ): Promise<DevEnvironment> {
+      ): Promise<BuildEnvironment> {
         // TODO: this should return an environment for build not dev
-        return createNodeVmDevEnvironment(name, config);
+        return createNodeVmBuildEnvironment(name, config);
       }
     },
   };
+}
+
+async function createNodeVmBuildEnvironment(
+  name: string,
+  config: ResolvedConfig,
+): Promise<BuildEnvironment> {
+  const buildEnv = new BuildEnvironment(name, config);
+  // Nothing too special to do here, the default build env is totally fine here
+  return buildEnv;
 }
 
 async function createNodeVmDevEnvironment(
