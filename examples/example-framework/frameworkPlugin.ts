@@ -1,11 +1,33 @@
-import type { ViteDevServer } from 'vite';
-import { type WorkerdDevEnvironment } from 'vite-environment-plugin-workerd';
+import type { UserConfig, ViteDevServer } from 'vite';
+import {
+  workerdEnvironmentProvider,
+  type WorkerdDevEnvironment,
+} from 'vite-environment-plugin-workerd';
 import type * as http from 'node:http';
-import { NodeVMDevEnvironment } from 'vite-environment-plugin-node-vm';
+import {
+  NodeVMDevEnvironment,
+  nodeVMEnvironmentProvider,
+} from 'vite-environment-plugin-node-vm';
 
-export function exampleFramework({ entrypoint }: { entrypoint: string }) {
+export function exampleFramework({
+  entrypoint,
+  env,
+}: {
+  entrypoint: string;
+  env: 'workerd' | 'node-vm';
+}) {
   return {
     name: 'example-framework-plugin',
+
+    async config(config: UserConfig) {
+      return {
+        environments: {
+          [env]: await (env === 'workerd'
+            ? workerdEnvironmentProvider()
+            : nodeVMEnvironmentProvider()),
+        },
+      };
+    },
 
     async configureServer(server: ViteDevServer) {
       const devEnvNodeVm = server.environments['node-vm'] as
