@@ -25,8 +25,8 @@ importers:
         specifier: ^3.20240129.3
         version: 3.20240405.2
       vite:
-        specifier: ^6.0.0-alpha
-        version: 6.0.0-alpha.3(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(@types/node@20.12.7)
       vite-environment-plugin-node-vm:
         specifier: workspace:*
         version: link:../../packages/vite-environment-plugin-node-vm
@@ -116,14 +116,14 @@ importers:
         specifier: ^5.1.6
         version: 5.4.5
       vite:
-        specifier: ^6.0.0-alpha
-        version: 6.0.0-alpha.3(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(@types/node@20.12.7)
       vite-environment-plugin-node-vm:
         specifier: workspace:*
         version: link:../../packages/vite-environment-plugin-node-vm
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.3)
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11)
       wrangler:
         specifier: ^3.24.0
         version: 3.30.0(@cloudflare/workers-types@4.20240423.0)
@@ -210,14 +210,14 @@ importers:
         specifier: ^5.1.6
         version: 5.4.5
       vite:
-        specifier: ^6.0.0-alpha
-        version: 6.0.0-alpha.3(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(@types/node@20.12.7)
       vite-environment-plugin-workerd:
         specifier: workspace:*
         version: link:../../packages/vite-environment-plugin-workerd
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.3)
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11)
       wrangler:
         specifier: ^3.24.0
         version: 3.30.0(@cloudflare/workers-types@4.20240423.0)
@@ -237,8 +237,8 @@ importers:
         specifier: ^5.0.4
         version: 5.4.5
       vite:
-        specifier: ^6.0.0-alpha
-        version: 6.0.0-alpha.3(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(@types/node@20.12.7)
 
   packages/vite-environment-plugin-workerd:
     dependencies:
@@ -265,8 +265,8 @@ importers:
         specifier: ^5.0.4
         version: 5.4.5
       vite:
-        specifier: ^6.0.0-alpha
-        version: 6.0.0-alpha.3(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(@types/node@20.12.7)
 
 packages:
 
@@ -4578,7 +4578,7 @@ packages:
       which-typed-array: 1.1.15
     dev: false
 
-  /vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.3):
+  /vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11):
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
     peerDependencies:
       vite: '*'
@@ -4589,14 +4589,14 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.4.5)
-      vite: 6.0.0-alpha.3(@types/node@20.12.7)
+      vite: 6.0.0-alpha.11(@types/node@20.12.7)
     transitivePeerDependencies:
       - supports-color
       - typescript
     dev: true
 
-  /vite@6.0.0-alpha.3(@types/node@20.12.7):
-    resolution: {integrity: sha512-9AyUOuPF80CW+Jh1iTEVrSOl2miUPzLKCaF8QhgCFoRzB9FB/t8wmKqM3id2Hdg/czcStGU0bXMaOM0CsgWtQw==}
+  /vite@6.0.0-alpha.11(@types/node@20.12.7):
+    resolution: {integrity: sha512-Pc0tgTWqdO4HzHpfnHxhVPj85gjrmoC+hEMLvI9vA8jTdSnjm4p6WUmvVfDYguBMCfnNXf1ThnxzS9GUwKxqpg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
