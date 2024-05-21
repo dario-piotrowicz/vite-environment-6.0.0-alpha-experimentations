@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [
     remix({
       ssrEnvironment: await workerdEnvironmentProvider({ config: './remix-wrangler.toml' }),
+      ssrRuntime: 'workerd',
     }),
     tsconfigPaths()
   ],

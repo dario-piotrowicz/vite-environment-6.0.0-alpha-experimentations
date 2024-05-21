@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [
     remix({
       ssrEnvironment: await nodeVMEnvironmentProvider(),
+      ssrRuntime: 'node',
     }),
     tsconfigPaths(),
   ],
