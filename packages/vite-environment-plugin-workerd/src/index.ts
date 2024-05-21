@@ -1,5 +1,5 @@
 import {
-  DevEnvironment,
+  DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
   type HMRChannel,
   type ResolvedConfig,
@@ -14,15 +14,13 @@ import {
 } from 'miniflare';
 import { fileURLToPath } from 'node:url';
 
-type WorkerHandler = (req: Request) => Response | Promise<Response>;
-
-export type WorkerdDevEnvironment = DevEnvironment & {
+export type DevEnvironment = ViteDevEnvironment & {
   api: {
-    getWorkerdHandler: ({
+    getHandler: ({
       entrypoint,
     }: {
       entrypoint: string;
-    }) => Promise<WorkerHandler>;
+    }) => Promise<(req: Request) => Response | Promise<Response>>;
   };
 };
 
@@ -30,32 +28,24 @@ export type WorkerdEnvironmentProviderOptions = {
   config?: string;
 };
 
-/**
- * Metadata regarding the environment that consumers can use to get more information about the env when needed
- */
-export type EnvironmentMetadata = {
-  name: string;
-};
-
-export type ViteEnvironmentProvider = {
-  metadata: EnvironmentMetadata;
-} & // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
-//       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
-//       they can just pick from/tweak the ViteEnvironmentProvider by themselves
-{
-  dev: {
-    createEnvironment(
-      name: string,
-      config: ResolvedConfig,
-    ): Promise<DevEnvironment>;
+export type ViteEnvironmentProvider =
+  // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+  //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
+  //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
+  {
+    dev: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment>;
+    };
+    build: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<BuildEnvironment>;
+    };
   };
-  build: {
-    createEnvironment(
-      name: string,
-      config: ResolvedConfig,
-    ): Promise<BuildEnvironment>;
-  };
-};
 
 export async function workerdEnvironmentProvider(
   options: WorkerdEnvironmentProviderOptions = {},
@@ -67,9 +57,6 @@ export async function workerdEnvironmentProvider(
   );
 
   return {
-    metadata: {
-      name: 'workerd',
-    },
     dev: {
       createEnvironment(
         name: string,
@@ -151,13 +138,13 @@ async function createWorkerdDevEnvironment(
 
   const hot = webSocket ? createHMRChannel(webSocket!, name) : false;
 
-  const devEnv = new DevEnvironment(name, config, {
+  const devEnv = new ViteDevEnvironment(name, config, {
     hot,
-  }) as WorkerdDevEnvironment;
+  }) as DevEnvironment;
 
   let entrypointSet = false;
   devEnv.api = {
-    async getWorkerdHandler({ entrypoint }) {
+    async getHandler({ entrypoint }) {
       if (!entrypointSet) {
         const resp = await mf.dispatchFetch('http:0.0.0.0/__set-entrypoint', {
           headers: [['x-vite-workerd-entrypoint', entrypoint]],

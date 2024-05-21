@@ -1,13 +1,10 @@
 import type { UserConfig, ViteDevServer } from 'vite';
 import {
   workerdEnvironmentProvider,
-  type WorkerdDevEnvironment,
+  type DevEnvironment,
 } from 'vite-environment-plugin-workerd';
 import type * as http from 'node:http';
-import {
-  NodeVMDevEnvironment,
-  nodeVMEnvironmentProvider,
-} from 'vite-environment-plugin-node-vm';
+import { nodeVMEnvironmentProvider } from 'vite-environment-plugin-node-vm';
 
 export function exampleFramework({
   entrypoint,
@@ -22,7 +19,7 @@ export function exampleFramework({
     async config(config: UserConfig) {
       return {
         environments: {
-          [env]: await (env === 'workerd'
+          ssr: await (env === 'workerd'
             ? workerdEnvironmentProvider()
             : nodeVMEnvironmentProvider()),
         },
@@ -30,27 +27,16 @@ export function exampleFramework({
     },
 
     async configureServer(server: ViteDevServer) {
-      const devEnvNodeVm = server.environments['node-vm'] as
-        | undefined
-        | NodeVMDevEnvironment;
-      const devEnvWorkerd = server.environments['workerd'] as
-        | undefined
-        | WorkerdDevEnvironment;
+      const devEnv = server.environments.ssr as undefined | DevEnvironment;
 
       let handler: RequestHandler;
 
-      if (devEnvNodeVm) {
-        handler = await devEnvNodeVm.api.getNodeHandler({
-          entrypoint,
-        });
-      } else if (devEnvWorkerd) {
-        handler = await devEnvWorkerd.api.getWorkerdHandler({
+      if (devEnv) {
+        handler = await devEnv.api.getHandler({
           entrypoint,
         });
       } else {
-        throw new Error(
-          'Neither the workerd nor node-vm environment was detected',
-        );
+        throw new Error('No ssr environment was detected');
       }
 
       return async () => {
