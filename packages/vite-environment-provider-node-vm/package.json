@@ -1,5 +1,5 @@
 {
-  "name": "vite-environment-plugin-node-vm",
+  "name": "vite-environment-provider-node-vm",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

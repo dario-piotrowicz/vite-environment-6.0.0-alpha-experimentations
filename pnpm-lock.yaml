@@ -27,12 +27,12 @@ importers:
       vite:
         specifier: ^6.0.0-alpha.11
         version: 6.0.0-alpha.11(@types/node@20.12.7)
-      vite-environment-plugin-node-vm:
+      vite-environment-provider-node-vm:
         specifier: workspace:*
-        version: link:../../packages/vite-environment-plugin-node-vm
-      vite-environment-plugin-workerd:
+        version: link:../../packages/vite-environment-provider-node-vm
+      vite-environment-provider-workerd:
         specifier: workspace:*
-        version: link:../../packages/vite-environment-plugin-workerd
+        version: link:../../packages/vite-environment-provider-workerd
 
   examples/remix-app-node-vm:
     dependencies:
@@ -118,9 +118,9 @@ importers:
       vite:
         specifier: ^6.0.0-alpha.11
         version: 6.0.0-alpha.11(@types/node@20.12.7)
-      vite-environment-plugin-node-vm:
+      vite-environment-provider-node-vm:
         specifier: workspace:*
-        version: link:../../packages/vite-environment-plugin-node-vm
+        version: link:../../packages/vite-environment-provider-node-vm
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11)
@@ -212,9 +212,9 @@ importers:
       vite:
         specifier: ^6.0.0-alpha.11
         version: 6.0.0-alpha.11(@types/node@20.12.7)
-      vite-environment-plugin-workerd:
+      vite-environment-provider-workerd:
         specifier: workspace:*
-        version: link:../../packages/vite-environment-plugin-workerd
+        version: link:../../packages/vite-environment-provider-workerd
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11)
@@ -222,7 +222,7 @@ importers:
         specifier: ^3.24.0
         version: 3.30.0(@cloudflare/workers-types@4.20240423.0)
 
-  packages/vite-environment-plugin-node-vm:
+  packages/vite-environment-provider-node-vm:
     devDependencies:
       '@types/node':
         specifier: ^20.11.19
@@ -240,7 +240,7 @@ importers:
         specifier: ^6.0.0-alpha.11
         version: 6.0.0-alpha.11(@types/node@20.12.7)
 
-  packages/vite-environment-plugin-workerd:
+  packages/vite-environment-provider-workerd:
     dependencies:
       miniflare:
         specifier: ^3.20240129.3

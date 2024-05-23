@@ -2,9 +2,9 @@ import type { UserConfig, ViteDevServer } from 'vite';
 import {
   workerdEnvironmentProvider,
   type DevEnvironment,
-} from 'vite-environment-plugin-workerd';
+} from 'vite-environment-provider-workerd';
 import type * as http from 'node:http';
-import { nodeVMEnvironmentProvider } from 'vite-environment-plugin-node-vm';
+import { nodeVMEnvironmentProvider } from 'vite-environment-provider-node-vm';
 
 export function exampleFramework({
   entrypoint,

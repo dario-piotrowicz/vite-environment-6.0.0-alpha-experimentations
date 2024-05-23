@@ -4,7 +4,7 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { nodeVMEnvironmentProvider } from 'vite-environment-plugin-node-vm';
+import { nodeVMEnvironmentProvider } from 'vite-environment-provider-node-vm';
 
 export default defineConfig({
   plugins: [
