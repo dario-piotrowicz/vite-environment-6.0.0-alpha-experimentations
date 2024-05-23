@@ -4,8 +4,14 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { viteEnvironmentPluginWorkerd } from 'vite-environment-plugin-workerd';
+import { workerdEnvironmentProvider } from 'vite-environment-provider-workerd';
 
 export default defineConfig({
-  plugins: [viteEnvironmentPluginWorkerd(), remix(), tsconfigPaths()],
+  plugins: [
+    remix({
+      ssrEnvironment: await workerdEnvironmentProvider({ config: './remix-wrangler.toml' }),
+      ssrRuntime: 'workerd',
+    }),
+    tsconfigPaths()
+  ],
 });

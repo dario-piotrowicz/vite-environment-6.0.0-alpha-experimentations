@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",
-    "@remix-run/dev": "npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-0",
+    "@remix-run/dev": "/Users/dario/Repos/my-repos/remix/packages/remix-dev",
     "@remix-run/server-runtime": "2.8.0",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
@@ -43,8 +43,8 @@
     "node-fetch": "^3.3.2",
     "patch-package": "^8.0.0",
     "typescript": "^5.1.6",
-    "vite": "^6.0.0-alpha",
-    "vite-environment-plugin-workerd": "workspace:*",
+    "vite": "^6.0.0-alpha.11",
+    "vite-environment-provider-workerd": "workspace:*",
     "vite-tsconfig-paths": "^4.2.1",
     "wrangler": "^3.24.0"
   },

@@ -1,30 +1,76 @@
-import { DevEnvironment, type HMRChannel, type ResolvedConfig } from 'vite';
+import {
+  DevEnvironment as ViteDevEnvironment,
+  BuildEnvironment,
+  type HMRChannel,
+  type ResolvedConfig,
+} from 'vite';
 
 import EventEmitter from 'node:events';
 
 import { runInContext, createContext } from 'node:vm';
 
-export function viteEnvironmentPluginNodeVM() {
-  return {
-    name: 'vite-environment-plugin-node-vm',
+export type NodeVMEnvironmentProviderOptions = {};
 
-    async config() {
-      return {
-        environments: {
-          'node-vm': {
-            dev: {
-              createEnvironment(
-                name: string,
-                config: ResolvedConfig,
-              ): Promise<DevEnvironment> {
-                return createNodeVmDevEnvironment(name, config);
-              },
-            },
-          },
-        },
-      };
+const runtimeName = 'node:vm';
+
+/**
+ * Metadata regarding the environment that consumers can use to get more information about the env when needed
+ */
+export type EnvironmentMetadata = {
+  runtimeName: string;
+};
+
+export type ViteEnvironmentProvider =
+  // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
+  //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
+  //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
+  {
+    metadata: EnvironmentMetadata;
+    dev: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment>;
+    };
+    build: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<BuildEnvironment>;
+    };
+  };
+
+export async function nodeVMEnvironmentProvider(
+  options: NodeVMEnvironmentProviderOptions = {},
+): Promise<ViteEnvironmentProvider> {
+  return {
+    metadata: { runtimeName },
+    dev: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<DevEnvironment> {
+        return createNodeVmDevEnvironment(name, config);
+      },
+    },
+    build: {
+      createEnvironment(
+        name: string,
+        config: ResolvedConfig,
+      ): Promise<BuildEnvironment> {
+        return createNodeVmBuildEnvironment(name, config);
+      },
     },
   };
+}
+
+async function createNodeVmBuildEnvironment(
+  name: string,
+  config: ResolvedConfig,
+): Promise<BuildEnvironment> {
+  const buildEnv = new BuildEnvironment(name, config);
+  // Nothing too special to do here, the default build env is totally fine here
+  return buildEnv;
 }
 
 async function createNodeVmDevEnvironment(
@@ -35,7 +81,7 @@ async function createNodeVmDevEnvironment(
 
   const hot = createSimpleHMRChannel(eventEmitter, name);
 
-  const devEnv = new DevEnvironment(name, config, { hot });
+  const devEnv = new ViteDevEnvironment(name, config, { hot });
 
   const vmContext = createContext({
     config,
@@ -100,7 +146,7 @@ async function createNodeVmDevEnvironment(
     }
 
     devEnv.api = {
-      async getNodeHandler({ entrypoint }) {
+      async getHandler({ entrypoint }) {
         const moduleRunner = await getModuleRunner();
         const entry = await moduleRunner.import(entrypoint);
         return entry.default;
@@ -115,7 +161,7 @@ async function createNodeVmDevEnvironment(
     },
   });
 
-  return devEnv;
+  return devEnv as DevEnvironment;
 }
 
 function createSimpleHMRChannel(
@@ -173,14 +219,13 @@ function createSimpleHMRChannel(
   };
 }
 
-type NodeVMHandler = (req: Request) => Response | Promise<Response>;
-
-export type NodeVMDevEnvironment = DevEnvironment & {
+export type DevEnvironment = ViteDevEnvironment & {
+  metadata: EnvironmentMetadata;
   api: {
-    getNodeHandler: ({
+    getHandler: ({
       entrypoint,
     }: {
       entrypoint: string;
-    }) => Promise<NodeVMHandler>;
+    }) => Promise<(req: Request) => Response | Promise<Response>>;
   };
 };

@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "miniflare": "^3.20240129.3",
-    "vite": "^6.0.0-alpha",
-    "vite-environment-plugin-workerd": "workspace:*",
-    "vite-environment-plugin-node-vm": "workspace:*"
+    "vite": "^6.0.0-alpha.11",
+    "vite-environment-provider-workerd": "workspace:*",
+    "vite-environment-provider-node-vm": "workspace:*"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",

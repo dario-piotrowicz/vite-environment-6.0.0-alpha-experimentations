@@ -1,5 +1,4 @@
 import type { UserConfig } from 'vite';
-import { environmentPlugin } from './environmentPlugin';
 import { exampleFramework } from './frameworkPlugin';
 
 const config: UserConfig = {
@@ -19,8 +18,8 @@ const config: UserConfig = {
     include: [],
   },
   plugins: [
-    environmentPlugin(),
     exampleFramework({
+      env: process.env['vite_env'] === 'workerd' ? 'workerd' : 'node-vm',
       entrypoint:
         process.env['vite_env'] === 'workerd'
           ? './entry-workerd.ts'
