@@ -15,6 +15,7 @@ import {
 import { fileURLToPath } from 'node:url';
 
 export type DevEnvironment = ViteDevEnvironment & {
+  metadata: EnvironmentMetadata;
   api: {
     getHandler: ({
       entrypoint,
@@ -28,11 +29,21 @@ export type WorkerdEnvironmentProviderOptions = {
   config?: string;
 };
 
+const runtimeName = 'workerd';
+
+/**
+ * Metadata regarding the environment that consumers can use to get more information about the env when needed
+ */
+export type EnvironmentMetadata = {
+  runtimeName: string;
+};
+
 export type ViteEnvironmentProvider =
   // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
   //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
   //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
   {
+    metadata: EnvironmentMetadata;
     dev: {
       createEnvironment(
         name: string,
@@ -57,6 +68,7 @@ export async function workerdEnvironmentProvider(
   );
 
   return {
+    metadata: { runtimeName },
     dev: {
       createEnvironment(
         name: string,
