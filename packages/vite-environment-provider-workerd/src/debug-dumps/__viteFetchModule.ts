@@ -13,10 +13,7 @@ export async function dump__viteFetchModuleLog(
   __viteFetchModuleArgs: unknown,
   result: { externalize: string } | { code: string },
 ) {
-  const importFilePath = (__viteFetchModuleArgs[0] as string).replace(
-    '/Users/dario/Repos/my-repos/',
-    '/',
-  );
+  const importFilePath = (__viteFetchModuleArgs[0] as string);
 
   await appendFile(
     __viteFetchModuleImportsFilePath,
@@ -30,10 +27,7 @@ export async function dump__viteFetchModuleLog(
   const runFilePath = `${__viteFetchModuleRunDir}/imported/${importFilePath}`;
   await mkdir(dirname(runFilePath), { recursive: true });
 
-  const importer = (__viteFetchModuleArgs[1] as string | undefined)?.replace(
-    '/Users/dario/Repos/my-repos/',
-    '/',
-  );
+  const importer = (__viteFetchModuleArgs[1] as string | undefined);
   await writeFile(runFilePath, `// imported from ${importer ?? 'unknown'}\n`);
 
   if ('externalize' in result) {
