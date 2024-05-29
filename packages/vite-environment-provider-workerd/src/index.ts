@@ -16,6 +16,7 @@ import {
 import { fileURLToPath } from 'node:url';
 import { dirname, relative } from 'node:path';
 import { readFile } from 'fs/promises';
+import { dump__viteFetchModuleLog } from './debug-dumps';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -131,6 +132,7 @@ async function createWorkerdDevEnvironment(
         const args = await request.json();
         try {
           const result: any = await devEnv.fetchModule(...(args as [any, any]));
+          dump__viteFetchModuleLog(args, result);
           return new MiniflareResponse(JSON.stringify(result));
         } catch (error) {
           console.error('[fetchModule]', args, error);
