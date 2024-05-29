@@ -16,7 +16,7 @@ import {
 import { fileURLToPath } from 'node:url';
 import { dirname, relative } from 'node:path';
 import { readFile } from 'fs/promises';
-import { dump__viteFetchModuleLog } from './debug-dumps';
+import * as debugDumps from './debug-dumps';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -132,7 +132,7 @@ async function createWorkerdDevEnvironment(
         const args = await request.json();
         try {
           const result: any = await devEnv.fetchModule(...(args as [any, any]));
-          dump__viteFetchModuleLog(args, result);
+          await debugDumps.dump__viteFetchModuleLog(args, result);
           return new MiniflareResponse(JSON.stringify(result));
         } catch (error) {
           console.error('[fetchModule]', args, error);
@@ -182,61 +182,36 @@ async function createWorkerdDevEnvironment(
             // custom: { "node-resolve": { isRequire: true } },
           }
         );
-        console.log('');
-        console.log('');
-        console.log('');
-        console.log(`\x1b[44m (${resolveMethod}) \x1b[0m`);
-        console.log(`\x1b[33m rawSpecifier ===> ${rawSpecifier} \x1b[0m`);
-        console.log(`\x1b[31m specifier ===> ${specifier}\x1b[0m`);
-        console.log(`\x1b[34m referrer ===> ${referrer}\x1b[0m`);
-        console.log(`\x1b[35m fixedSpecifier ===> ${fixedSpecifier}\x1b[0m`);
-        console.log(`\x1b[32m resolvedId ===> ${id} \x1b[0m`);
-        console.log('');
-        console.log('');
-        console.log('');
+
+        const resolvedId = id;
 
         if (id.includes('?')) id = id.slice(0, id.lastIndexOf('?'));
 
-        if(id !== rawSpecifier && id !== specifier) {
-          console.log(`\x1b[41m redirecting to ---> ${id} \x1b[0m`);
+        const redirectTo = id !== rawSpecifier && id !== specifier ? id : undefined;
+
+        let code: string|undefined;
+        if(!redirectTo) {
+          // and we read the code from the resolved file
+          code = await readFile(id, 'utf8');
+          if (code) {
+            result = { code };
+          }
+        }
+
+        if(redirectTo) {
           return new MiniflareResponse(null, {headers: {location: id}, status: 301});
         }
 
-        // and we read the code from the resolved file
-        const code = await readFile(id, 'utf8');
-        if (code) {
-          result = { code };
-        }
-      } catch {
-        console.log('');
-        console.log('');
-        console.log('');
-        console.log(`\x1b[33m rawSpecifier ===> ${rawSpecifier} \x1b[0m`);
-        console.log(`\x1b[31m specifier ===> ${specifier}\x1b[0m`);
-        console.log(`\x1b[34m referrer ===> ${referrer}\x1b[0m`);
-        console.log(`\x1b[35m fixedSpecifier ===> ${fixedSpecifier}\x1b[0m`);
-        console.log('');
-        console.log('');
-        console.log('');
-      }
-
-      if (!result) {
-        return new MiniflareResponse(null, { status: 404 });
-      }
+        const notFound = !result;
 
       // TODO: to implement properly
-      let isCommonJs =
-        result.code.includes('module.exports =') ||
-        result.code.includes('\nexports.') ||
-        result.code.includes('\nexports[') ||
-        fixedSpecifier.includes('react-router.development') ||
-        fixedSpecifier.includes('react-router-dom.development');
-      
-        console.log(`\x1b[44m isCommonJs = ${isCommonJs} (${fixedSpecifier}) \x1b[0m`);
-
+      const isCommonJS = code &&
+        (code.includes('module.exports =') ||
+        code.includes('\nexports.') ||
+        code.includes('\nexports['));
 
       // if result is commonjs
-      const mod = isCommonJs
+      const mod = isCommonJS
         ? {
             commonJsModule: result.code,
           }
@@ -244,12 +219,30 @@ async function createWorkerdDevEnvironment(
             esModule: result.code,
           };
 
+          debugDumps.dumpModuleFallbackServiceLog({
+            resolveMethod,
+            referrer,
+            specifier,
+            rawSpecifier,
+            fixedSpecifier,
+            resolvedId,
+            redirectTo,
+            code,
+            isCommonJS,
+            notFound: notFound || undefined,
+          })
+
+        if (notFound) {
+          return new MiniflareResponse(null, { status: 404 });
+        }
+
       return new MiniflareResponse(
         JSON.stringify({
           name: specifier.replace(/^\//, ''),
           ...mod,
         }),
       );
+      } catch {}
     },
   });
 
