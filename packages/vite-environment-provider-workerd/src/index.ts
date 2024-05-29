@@ -12,7 +12,10 @@ import {
   type TypedEventListener,
   type WebSocket,
 } from 'miniflare';
+
 import { fileURLToPath } from 'node:url';
+import { dirname, relative } from 'node:path';
+import { readFile } from 'fs/promises';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -108,6 +111,12 @@ async function createWorkerdDevEnvironment(
         type: 'ESModule',
         path: fileURLToPath(new URL('worker/index.js', import.meta.url)),
       },
+      {
+        // we declare the workerd-custom-import as a CommonJS module, thanks to this
+        // require is made available in the module and we are able to handle cjs imports, etc...
+        type: 'CommonJS',
+        path: fileURLToPath(new URL('workerd-custom-import.cjs', import.meta.url)),
+      },
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
     compatibilityDate: '2024-02-08',
@@ -128,6 +137,117 @@ async function createWorkerdDevEnvironment(
           throw error;
         }
       },
+    },
+    unsafeUseModuleFallbackService: true,
+    async unsafeModuleFallbackService(request) {
+      const resolveMethod = request.headers.get('X-Resolve-Method');
+      if (resolveMethod !== 'import' && resolveMethod !== 'require') {
+        throw new Error('unrecognized resolvedMethod');
+      }
+
+      const url = new URL(request.url);
+      const specifier = url.searchParams.get('specifier');
+      if (!specifier) {
+        throw new Error('no specifier provided');
+      }
+
+      const rawSpecifier = url.searchParams.get('raw'); // 👈 it should be rawSpecifier
+
+      const referrer = url.searchParams.get('referrer');
+
+      const referrerDir = dirname(referrer);
+
+      let fixedSpecifier = specifier;
+
+      if (!/node_modules/.test(referrerDir)) {
+        // for app source code strip prefix and prepend /
+        fixedSpecifier = '/' + getApproximateSpecifier(specifier, referrerDir);
+      } else if (!specifier.endsWith('.js')) {
+        // for package imports from other packages strip prefix
+        fixedSpecifier = getApproximateSpecifier(specifier, referrerDir);
+      }
+
+      fixedSpecifier = rawSpecifier;
+
+      let result: { code: string } | undefined;
+      try {
+        // we make the pluginContainer resolve the files correctly
+        let { id } = await devEnv.pluginContainer.resolveId(
+          fixedSpecifier,
+          referrer,
+          {
+            // https://github.com/vitejs/vite/blob/v5.1.4/packages/vite/src/node/plugins/resolve.ts#L178-L179
+            // custom: { "node-resolve": { isRequire: true } },
+          }
+        );
+        console.log('');
+        console.log('');
+        console.log('');
+        console.log(`\x1b[44m (${resolveMethod}) \x1b[0m`);
+        console.log(`\x1b[33m rawSpecifier ===> ${rawSpecifier} \x1b[0m`);
+        console.log(`\x1b[31m specifier ===> ${specifier}\x1b[0m`);
+        console.log(`\x1b[34m referrer ===> ${referrer}\x1b[0m`);
+        console.log(`\x1b[35m fixedSpecifier ===> ${fixedSpecifier}\x1b[0m`);
+        console.log(`\x1b[32m resolvedId ===> ${id} \x1b[0m`);
+        console.log('');
+        console.log('');
+        console.log('');
+
+        if (id.includes('?')) id = id.slice(0, id.lastIndexOf('?'));
+
+        if(id !== rawSpecifier && id !== specifier) {
+          console.log(`\x1b[41m redirecting to ---> ${id} \x1b[0m`);
+          return new MiniflareResponse(null, {headers: {location: id}, status: 301});
+        }
+
+        // and we read the code from the resolved file
+        const code = await readFile(id, 'utf8');
+        if (code) {
+          result = { code };
+        }
+      } catch {
+        console.log('');
+        console.log('');
+        console.log('');
+        console.log(`\x1b[33m rawSpecifier ===> ${rawSpecifier} \x1b[0m`);
+        console.log(`\x1b[31m specifier ===> ${specifier}\x1b[0m`);
+        console.log(`\x1b[34m referrer ===> ${referrer}\x1b[0m`);
+        console.log(`\x1b[35m fixedSpecifier ===> ${fixedSpecifier}\x1b[0m`);
+        console.log('');
+        console.log('');
+        console.log('');
+      }
+
+      if (!result) {
+        return new MiniflareResponse(null, { status: 404 });
+      }
+
+      // TODO: to implement properly
+      let isCommonJs =
+        result.code.includes('module.exports =') ||
+        result.code.includes('\nexports.') ||
+        result.code.includes('\nexports[') ||
+        fixedSpecifier.includes('react-router.development') ||
+        fixedSpecifier.includes('react-router-dom.development');
+      
+        console.log(`\x1b[44m isCommonJs = ${isCommonJs} (${fixedSpecifier}) \x1b[0m`);
+
+
+      // if result is commonjs
+      const mod = isCommonJs
+        ? {
+            commonJsModule: result.code,
+          }
+        : {
+            esModule: result.code,
+          };
+
+      return new MiniflareResponse(
+        JSON.stringify({
+          name: specifier.replace(/^\//, ''),
+          ...mod,
+        }),
+      );
     },
   });
 
@@ -165,7 +285,7 @@ async function createWorkerdDevEnvironment(
           entrypointSet = resp.ok;
         } else {
           throw new Error(
-            `failed to set entrypoint (error: "${resp.statusText}")`,
+            'failed to set entrypoint (the error should be logged in the terminal)',
           );
         }
       }
@@ -240,4 +360,11 @@ function createHMRChannel(webSocket: WebSocket, name: string): HMRChannel {
       webSocket.send(JSON.stringify(payload));
     },
   };
+}
+
+function getApproximateSpecifier(target: string, referrerDir: string): string {
+  let result = '';
+  if (/^(node|cloudflare|workerd):/.test(target)) result = target;
+  result = relative(referrerDir, target);
+  return result;
 }

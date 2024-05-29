@@ -46,7 +46,7 @@
     "vite": "^6.0.0-alpha.11",
     "vite-environment-provider-workerd": "workspace:*",
     "vite-tsconfig-paths": "^4.2.1",
-    "wrangler": "^3.24.0"
+    "wrangler": "^3.57.2"
   },
   "engines": {
     "node": ">=18.0.0"

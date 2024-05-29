@@ -129,6 +129,7 @@ async function createNodeVmDevEnvironment(
           },
           {
             runInlinedModule: async (context, transformed, id) => {
+              // console.log(\`\x1b[34m runInlineModule \${id} \x1b[0m\`);
               const codeDefinition = \`'use strict';async (\${Object.keys(context).join(
                 ',',
               )})=>{{\`;
@@ -138,6 +139,7 @@ async function createNodeVmDevEnvironment(
               Object.freeze(context.__vite_ssr_exports__);
             },
             async runExternalModule(filepath) {
+              console.log(\`\x1b[33m runExternalModule \${filepath} \x1b[0m\`);
               return import(filepath);
             },
           },

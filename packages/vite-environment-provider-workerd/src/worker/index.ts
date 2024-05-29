@@ -11,6 +11,10 @@ type Env = {
   root: string;
 };
 
+// node modules using process.env don't find process in the global scope for some reason...
+// so let's define it here 🤷
+globalThis.process = { env: {} };
+
 let entrypoint: any;
 let moduleRunner: ModuleRunner;
 let hmrWebSocket: WebSocket;
@@ -35,9 +39,9 @@ export default {
       try {
         entrypoint = await moduleRunner.import(viteWorkerdEntrypoint!);
       } catch (error) {
-        return new Response('entrypoint not set', {
+        console.error(error);
+        return new Response(null, {
           status: 500,
-          statusText: `${error}`,
         });
       }
       return new Response('entrypoint successfully set');
@@ -52,6 +56,11 @@ let _moduleRunner: ModuleRunner | undefined;
 
 async function getModuleRunner(env: Env) {
   if (_moduleRunner) return _moduleRunner;
+
+  // we store the custom import file path in a variable to skip esbuild's import resolution
+  const workerdReqImport = '../workerd-custom-import.cjs';
+  const { default: workerdCustomImport } = await (import(workerdReqImport) as Promise<{ default: (...args: unknown[]) => Promise<unknown> }>);
+
   _moduleRunner = new ModuleRunner(
     {
       root: env.ROOT,
@@ -92,7 +101,12 @@ async function getModuleRunner(env: Env) {
         Object.freeze(context.__vite_ssr_exports__);
       },
       async runExternalModule(filepath) {
-        return import(filepath);
+        console.log(`\x1b[41m runExternal (${filepath}) \x1b[0m`);
+        // strip the file:// prefix if present
+        // Note: I _think_ that the module fallback service is going to strip this for us
+        //       in the future, so this will very likely become unnecessary
+        filepath = filepath.replace(/^file:\/\//, '');
+        return workerdCustomImport(filepath);
       },
     },
   );

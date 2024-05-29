@@ -19,6 +19,6 @@
   },
   "peerDependencies": {
     "miniflare": "^3.20240129.3",
-    "wrangler": "3.30.0"
+    "wrangler": "^3.57.2"
   }
 }
