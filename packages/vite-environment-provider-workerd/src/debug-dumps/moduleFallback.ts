@@ -1,8 +1,6 @@
 import { dirname } from 'node:path';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
-import { runDir } from './shared';
-
-let dumpModuleFallbackCounter = 0;
+import { getImportCounterStr, runDir } from './shared';
 
 const moduleFallbackRunDir = `${runDir}/moduleFallback`;
 await mkdir(moduleFallbackRunDir);
@@ -32,7 +30,7 @@ export async function dumpModuleFallbackServiceLog(
 ) {
   await appendFile(
     moduleFallbackLogsFilePath,
-    `\n\n${`${dumpModuleFallbackCounter}`.padStart(3, '0')}:\n${Object.keys(
+    `\n\n${await getImportCounterStr('moduleFallback', results.resolvedId)}:\n${Object.keys(
       results,
     )
       .filter(key => key !== 'code')
@@ -41,11 +39,9 @@ export async function dumpModuleFallbackServiceLog(
       .join('\n')}\n\n`,
   );
 
-  if(results.resolvedId && !results["notFound"]) {
-      const filePath = `${moduleFallbackRunDir}/resolved/${results.resolvedId}`;
-      await mkdir(dirname(filePath), { recursive: true });
-      await writeFile(filePath, 'code' in results ? results.code : '');
+  if (results.resolvedId && !results['notFound']) {
+    const filePath = `${moduleFallbackRunDir}/resolved/${results.resolvedId}`;
+    await mkdir(dirname(filePath), { recursive: true });
+    await writeFile(filePath, 'code' in results ? results.code : '');
   }
-
-  dumpModuleFallbackCounter++;
 }

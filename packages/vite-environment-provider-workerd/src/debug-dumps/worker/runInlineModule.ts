@@ -1,8 +1,7 @@
 import { dirname } from 'node:path';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
 import { workerRunDir } from './shared';
-
-let runInlineModuleCounter = 0;
+import { getImportCounterStr } from '../shared';
 
 const runInlineModuleRunDir = `${workerRunDir}/runInlineModule`;
 await mkdir(runInlineModuleRunDir);
@@ -18,12 +17,10 @@ export async function dumpRunInlineModuleLog({
 }) {
   await appendFile(
     logsFilePath,
-    `${`${runInlineModuleCounter}`.padStart(3, '0')}: ${id}\n`,
+    `${`${await getImportCounterStr('worker/runInlineModule', id)}`.padStart(3, '0')}: ${id}\n`,
   );
 
   const filePath = `${runInlineModuleRunDir}/modules/${id}`;
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, code);
-
-  runInlineModuleCounter++;
 }
