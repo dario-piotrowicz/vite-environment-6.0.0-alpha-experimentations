@@ -1,2 +1,3 @@
-export { dump__viteFetchModuleLog } from './__viteFetchModule';
-export { dumpModuleFallbackServiceLog } from './moduleFallback';
+export * from './__viteFetchModule';
+export * from './moduleFallback';
+export * from './worker';

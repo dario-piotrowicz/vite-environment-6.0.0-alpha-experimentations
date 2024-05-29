@@ -8,6 +8,9 @@ type Env = {
   __viteFetchModule: {
     fetch: (request: Request) => Promise<Response>;
   };
+  __debugDump: {
+    fetch: (request: Request) => Promise<Response>;
+  };
   root: string;
 };
 
@@ -96,12 +99,19 @@ async function getModuleRunner(env: Env) {
           ',',
         )})=>{{`;
         const code = `${codeDefinition}${transformed}\n}}`;
+        await env.__debugDump.fetch(new Request('http://0.0.0.0/runInlineModule', {
+          method: 'POST',
+          body: JSON.stringify({ id, code }),
+        }));
         const fn = env.UNSAFE_EVAL.eval(code, id);
         await fn(...Object.values(context));
         Object.freeze(context.__vite_ssr_exports__);
       },
       async runExternalModule(filepath) {
-        console.log(`\x1b[41m runExternal (${filepath}) \x1b[0m`);
+        await env.__debugDump.fetch(new Request('http://0.0.0.0/runExternalModule', {
+          method: 'POST',
+          body: JSON.stringify({ filepath }),
+        }));
         // strip the file:// prefix if present
         // Note: I _think_ that the module fallback service is going to strip this for us
         //       in the future, so this will very likely become unnecessary

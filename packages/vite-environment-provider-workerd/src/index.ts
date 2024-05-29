@@ -139,6 +139,7 @@ async function createWorkerdDevEnvironment(
           throw error;
         }
       },
+      __debugDump: debugDumps.__debugDumpBinding,
     },
     unsafeUseModuleFallbackService: true,
     async unsafeModuleFallbackService(request) {
