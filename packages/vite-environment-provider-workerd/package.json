@@ -10,15 +10,19 @@
     "dist"
   ],
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240423.0",
     "@types/node": "^20.11.19",
     "esbuild": "^0.15.3",
     "tsup": "^8.0.2",
     "typescript": "^5.0.4",
-    "vite": "^6.0.0-alpha.11",
-    "@cloudflare/workers-types": "^4.20240423.0"
+    "vite": "^6.0.0-alpha.11"
   },
   "peerDependencies": {
     "miniflare": "^3.20240129.3",
     "wrangler": "^3.57.2"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.24.6",
+    "recast": "^0.23.7"
   }
 }
