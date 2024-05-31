@@ -7,6 +7,11 @@ settings:
 overrides:
   workerd: 1.20240524.0
 
+patchedDependencies:
+  vite@6.0.0-alpha.11:
+    hash: jknebzkwjvbd3ucmhgbrsvwgf4
+    path: patches/vite@6.0.0-alpha.11.patch
+
 importers:
 
   .:
@@ -29,7 +34,7 @@ importers:
         version: 3.20240405.2
       vite:
         specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(@types/node@20.12.7)
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
       vite-environment-provider-node-vm:
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
@@ -75,7 +80,7 @@ importers:
         version: 4.20240423.0
       '@remix-run/dev':
         specifier: /Users/dario/Repos/my-repos/remix/packages/remix-dev
-        version: link:../../../../Repos/my-repos/remix/packages/remix-dev
+        version: link:../../../../../Repos/my-repos/remix/packages/remix-dev
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -120,13 +125,13 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(@types/node@20.12.7)
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
       vite-environment-provider-node-vm:
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(@types/node@20.12.7))
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))
       wrangler:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240423.0)
@@ -169,7 +174,7 @@ importers:
         version: 4.20240423.0
       '@remix-run/dev':
         specifier: /Users/dario/Repos/my-repos/remix/packages/remix-dev
-        version: link:../../../../Repos/my-repos/remix/packages/remix-dev
+        version: link:../../../../../Repos/my-repos/remix/packages/remix-dev
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -214,13 +219,13 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(@types/node@20.12.7)
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
       vite-environment-provider-workerd:
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-workerd
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(@types/node@20.12.7))
+        version: 4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))
       wrangler:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240423.0)
@@ -241,7 +246,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(@types/node@20.12.7)
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
 
   packages/vite-environment-provider-workerd:
     dependencies:
@@ -275,7 +280,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(@types/node@20.12.7)
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
 
 packages:
 
@@ -5311,18 +5316,18 @@ snapshots:
       is-typed-array: 1.1.13
       which-typed-array: 1.1.15
 
-  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(@types/node@20.12.7)):
+  vite-tsconfig-paths@4.3.2(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)):
     dependencies:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.4.5)
     optionalDependencies:
-      vite: 6.0.0-alpha.11(@types/node@20.12.7)
+      vite: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@6.0.0-alpha.11(@types/node@20.12.7):
+  vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
