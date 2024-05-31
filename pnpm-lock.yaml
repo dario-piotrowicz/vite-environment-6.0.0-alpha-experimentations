@@ -6,7 +6,7 @@ settings:
 
 overrides:
   workerd: 1.20240524.0
-  '@remix-run/dev': npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-1
+  '@remix-run/dev': npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-2
 
 patchedDependencies:
   vite@6.0.0-alpha.11:
@@ -83,8 +83,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
       '@remix-run/dev':
-        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-1
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-1(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))'
+        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-2
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-2(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))'
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -177,8 +177,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-workerd
       '@remix-run/dev':
-        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-1
-        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-1(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))'
+        specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-2
+        version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-2(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))'
       '@remix-run/server-runtime':
         specifier: 2.8.0
         version: 2.8.0(typescript@5.4.5)
@@ -492,8 +492,8 @@ packages:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
 
-  '@dario-hacking/remix-run-dev@2.9.1-vite-env-1':
-    resolution: {integrity: sha512-jSgQoOMfgnLg0ntxrwT5Lx+dBfmTAtIn8peOCqPx62XIEZdy20OjLd8/z/UMJAPYk/Gjc4QOXGqDtHzfjcb/mQ==}
+  '@dario-hacking/remix-run-dev@2.9.1-vite-env-2':
+    resolution: {integrity: sha512-mrgXcKwAkZA0iZd/1i4efpGYnaYaXOUZ2Ji1qK0B0O7EVDCRfpcC59biQbKdy8ZCAswhMqfvVLPHGQlLbx7+BA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -4604,7 +4604,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@dario-hacking/remix-run-dev@2.9.1-vite-env-1(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))':
+  '@dario-hacking/remix-run-dev@2.9.1-vite-env-2(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240405.2)(typescript@5.4.5)(vite@6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240423.0))':
     dependencies:
       '@babel/core': 7.24.6
       '@babel/generator': 7.24.6
