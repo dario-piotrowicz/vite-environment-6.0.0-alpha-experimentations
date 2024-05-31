@@ -2,3 +2,5 @@ node_modules
 dist
 .vscode
 .DS_Store
+
+.workerd-env-dumps

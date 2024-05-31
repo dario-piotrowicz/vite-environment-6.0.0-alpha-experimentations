@@ -1,5 +1,11 @@
 {
-  "name": "vite-environment-provider-node-vm",
+  "name": "@dario-hacking/vite-6-alpha-environment-provider-node-vm",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dario-piotrowicz/vite-environment-6.0.0-alpha-experimentations/",
+    "directory": "packages/vite-environment-provider-node-vm"
+  },
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

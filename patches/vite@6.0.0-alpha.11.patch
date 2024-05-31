@@ -1,0 +1,25 @@
+diff --git a/dist/node/chunks/dep-CjFMk8-F.js b/dist/node/chunks/dep-CjFMk8-F.js
+index 527e3d3dc95113799a924a2be5f764d03f1896cb..c3b76a20e9a819a9a94127b9b4883d732f262585 100644
+--- a/dist/node/chunks/dep-CjFMk8-F.js
++++ b/dist/node/chunks/dep-CjFMk8-F.js
+@@ -59974,9 +59974,9 @@ async function fetchModule(environment, url, importer, options = {}) {
+     }
+     if (url[0] !== '.' && url[0] !== '/') {
+         const { isProduction, root } = environment.config;
+-        const { externalConditions, dedupe, preserveSymlinks } = environment.options.resolve;
++        const { externalConditions, dedupe, preserveSymlinks, mainFields, extensions } = environment.options.resolve;
+         const resolved = tryNodeResolve(url, importer, {
+-            mainFields: ['main'],
++            mainFields,
+             conditions: [],
+             externalConditions,
+             external: [],
+@@ -59986,7 +59986,7 @@ async function fetchModule(environment, url, importer, options = {}) {
+                 'production',
+                 'development',
+             ],
+-            extensions: ['.js', '.cjs', '.json'],
++            extensions,
+             dedupe,
+             preserveSymlinks,
+             isBuild: false,

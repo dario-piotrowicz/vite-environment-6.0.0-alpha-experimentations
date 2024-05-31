@@ -1,10 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
+// @ts-ignore
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { nodeVMEnvironmentProvider } from 'vite-environment-provider-node-vm';
+import { nodeVMEnvironmentProvider } from '@dario-hacking/vite-6-alpha-environment-provider-node-vm';
 
 export default defineConfig({
   plugins: [
