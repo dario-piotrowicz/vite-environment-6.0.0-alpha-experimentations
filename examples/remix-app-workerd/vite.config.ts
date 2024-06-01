@@ -8,9 +8,11 @@ import { workerdEnvironmentProvider } from '@dario-hacking/vite-6-alpha-environm
 export default defineConfig({
   plugins: [
     remix({
-      ssrEnvironment: await workerdEnvironmentProvider({ config: './remix-wrangler.toml' }),
+      ssrEnvironment: await workerdEnvironmentProvider({
+        config: './remix-wrangler.toml',
+      }),
       ssrRuntime: 'workerd',
     }),
-    tsconfigPaths()
+    tsconfigPaths(),
   ],
 });

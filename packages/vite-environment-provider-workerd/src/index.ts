@@ -117,7 +117,9 @@ async function createWorkerdDevEnvironment(
         // we declare the workerd-custom-import as a CommonJS module, thanks to this
         // require is made available in the module and we are able to handle cjs imports, etc...
         type: 'CommonJS',
-        path: fileURLToPath(new URL('workerd-custom-import.cjs', import.meta.url)),
+        path: fileURLToPath(
+          new URL('workerd-custom-import.cjs', import.meta.url),
+        ),
       },
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
@@ -182,17 +184,18 @@ async function createWorkerdDevEnvironment(
           {
             // https://github.com/vitejs/vite/blob/v5.1.4/packages/vite/src/node/plugins/resolve.ts#L178-L179
             // custom: { "node-resolve": { isRequire: true } },
-          }
+          },
         );
 
         const resolvedId = id;
 
         if (id.includes('?')) id = id.slice(0, id.lastIndexOf('?'));
 
-        const redirectTo = id !== rawSpecifier && id !== specifier ? id : undefined;
+        const redirectTo =
+          id !== rawSpecifier && id !== specifier ? id : undefined;
 
-        let code: string|undefined;
-        if(!redirectTo) {
+        let code: string | undefined;
+        if (!redirectTo) {
           // and we read the code from the resolved file
           code = await readFile(id, 'utf8');
           if (code) {
@@ -201,14 +204,18 @@ async function createWorkerdDevEnvironment(
           }
         }
 
-        if(redirectTo) {
-          return new MiniflareResponse(null, {headers: {location: id}, status: 301});
+        if (redirectTo) {
+          return new MiniflareResponse(null, {
+            headers: { location: id },
+            status: 301,
+          });
         }
 
         const notFound = !result;
 
         // TODO: to implement properly
-        const isCommonJS = code &&
+        const isCommonJS =
+          code &&
           (code.includes('module.exports =') ||
             code.includes('\nexports.') ||
             code.includes('\nexports['));
@@ -233,7 +240,7 @@ async function createWorkerdDevEnvironment(
           code,
           isCommonJS,
           notFound: notFound || undefined,
-        })
+        });
 
         if (notFound) {
           return new MiniflareResponse(null, { status: 404 });
