@@ -157,7 +157,9 @@ async function createWorkerdDevEnvironment(
         throw new Error('no specifier provided');
       }
 
-      const rawSpecifier = url.searchParams.get('raw'); // 👈 it should be rawSpecifier
+      // TODO: instead of `raw` use `rawSpecifier`, as soon as that is updated in workerd
+      // (https://github.com/cloudflare/workerd/pull/2186)
+      const rawSpecifier = url.searchParams.get('raw');
 
       const referrer = url.searchParams.get('referrer');
 
@@ -177,13 +179,16 @@ async function createWorkerdDevEnvironment(
 
       let result: { code: string } | undefined;
       try {
-        // we make the pluginContainer resolve the files correctly
         let { id } = await devEnv.pluginContainer.resolveId(
           fixedSpecifier,
           referrer,
           {
-            // https://github.com/vitejs/vite/blob/v5.1.4/packages/vite/src/node/plugins/resolve.ts#L178-L179
-            // custom: { "node-resolve": { isRequire: true } },
+            // The following is to let know `resolveId` if the import is actually a require
+            // https://github.com/vitejs/vite/blob/8851d9d1c97cdce0807edd45e33e70446e545956/packages/vite/src/node/plugins/resolve.ts#L228-L230
+            // (Note: I am not sure if this is actually making any difference ¯\_(ツ)_/¯)
+            custom: {
+              'node-resolve': { isRequire: resolveMethod === 'require' },
+            },
           },
         );
 
@@ -213,14 +218,15 @@ async function createWorkerdDevEnvironment(
 
         const notFound = !result;
 
-        // TODO: to implement properly
+        // TODO: here we use some very very silly/brittle string checks to see if the loaded
+        //       module is cjs, this 1000% should be improved, could Vite itself help us out here?
+        //       (could `devEnv.pluginContainer.resolveId` itself tell us the module's type?)
         const isCommonJS =
           code &&
           (code.includes('module.exports =') ||
             code.includes('\nexports.') ||
             code.includes('\nexports['));
 
-        // if result is commonjs
         const mod = isCommonJS
           ? {
               commonJsModule: result.code,

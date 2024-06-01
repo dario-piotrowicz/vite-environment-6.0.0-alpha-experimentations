@@ -5,6 +5,8 @@
  * the issues being addressed here are triggered when esm code imports from cjs files,
  * and the issues are the following two (note: they will hopefully be fixed soon in workerd making this unnecessary):
  *
+ * NOTE: this file should hopefully soon be unnecessary (https://github.com/cloudflare/workerd/pull/2194)
+ *
  * #1) workerd fails to import from esm named exports from cjs files
  *     for example:
  *     ``` // a.cjs

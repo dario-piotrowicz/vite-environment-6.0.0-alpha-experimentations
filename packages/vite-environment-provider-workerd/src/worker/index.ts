@@ -15,7 +15,7 @@ type Env = {
 };
 
 // node modules using process.env don't find process in the global scope for some reason...
-// so let's define it here 🤷
+// so let's define it here ¯\_(ツ)_/¯
 globalThis.process = { env: {} };
 
 let entrypoint: any;
@@ -50,8 +50,12 @@ export default {
       return new Response('entrypoint successfully set');
     }
 
-    // TODO: from env we can filter out the bindings we use to integrate with the vite environment
-    return entrypoint.default.fetch(req, env, ctx);
+    // here we filter out the extra bindings that we use for the environment
+    // integration, so that user code doesn't get access to them
+    const { ROOT, UNSAFE_EVAL, __viteFetchModule, __debugDump, ...userEnv } =
+      env;
+
+    return entrypoint.default.fetch(req, userEnv, ctx);
   },
 };
 

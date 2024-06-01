@@ -16,12 +16,11 @@ const buildWorkerConfig = defineConfig({
  * This configuration for our custom cjs import
  */
 const workerdCustomImportConfig = defineConfig({
-  entry: ['workerd-custom-import.ts'],
+  entry: ['workerd-custom-import.cts'],
   outDir: 'dist',
   format: ['cjs'],
   platform: 'node',
   noExternal: [/.*/],
-  silent: true,
 });
 
 const buildPluginConfig = defineConfig({
@@ -38,7 +37,6 @@ const buildPluginConfig = defineConfig({
     'esbuild',
     'vite',
   ],
-  silent: true,
   noExternal: ['recast/parsers/babel', '@babel/parser'],
 });
 

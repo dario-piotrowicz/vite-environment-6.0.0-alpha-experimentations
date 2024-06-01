@@ -13,6 +13,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src", ".eslintrc.js", "workerd-custom-import.ts"],
+  "include": ["src", ".eslintrc.js", "workerd-custom-import.cts"],
   "exclude": ["src/worker"]
 }

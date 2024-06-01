@@ -26,9 +26,6 @@ const config: UserConfig = {
           : './entry-node-vm.ts',
     }),
   ],
-  build: {
-    minify: false,
-  },
 };
 
 export default config;
