@@ -1,16 +1,21 @@
 import { dirname } from 'node:path';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
-import { getImportCounterStr, runDir } from './shared';
+import { getImportCounterStr, runDir, debugDumpsEnabled } from './shared';
 
 const __viteFetchModuleRunDir = `${runDir}/__viteFetchModule`;
-await mkdir(__viteFetchModuleRunDir);
 const __viteFetchModuleImportsFilePath = `${__viteFetchModuleRunDir}/imports.txt`;
-await writeFile(__viteFetchModuleImportsFilePath, '');
+
+if (debugDumpsEnabled) {
+  await mkdir(__viteFetchModuleRunDir);
+  await writeFile(__viteFetchModuleImportsFilePath, '');
+}
 
 export async function dump__viteFetchModuleLog(
   __viteFetchModuleArgs: unknown,
   result: { externalize: string } | { code: string },
 ) {
+  if (!debugDumpsEnabled) return;
+
   const importFilePath = __viteFetchModuleArgs[0] as string;
 
   await appendFile(

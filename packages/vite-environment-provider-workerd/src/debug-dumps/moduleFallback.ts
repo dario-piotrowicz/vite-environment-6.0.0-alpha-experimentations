@@ -1,11 +1,14 @@
 import { dirname } from 'node:path';
 import { appendFile, mkdir, writeFile } from 'node:fs/promises';
-import { getImportCounterStr, runDir } from './shared';
+import { getImportCounterStr, runDir, debugDumpsEnabled } from './shared';
 
 const moduleFallbackRunDir = `${runDir}/moduleFallback`;
-await mkdir(moduleFallbackRunDir);
 const moduleFallbackLogsFilePath = `${moduleFallbackRunDir}/logs.txt`;
-await writeFile(moduleFallbackLogsFilePath, '');
+
+if (debugDumpsEnabled) {
+  await mkdir(moduleFallbackRunDir);
+  await writeFile(moduleFallbackLogsFilePath, '');
+}
 
 export async function dumpModuleFallbackServiceLog(
   results: {
@@ -28,6 +31,8 @@ export async function dumpModuleFallbackServiceLog(
       }
   ),
 ) {
+  if (!debugDumpsEnabled) return;
+
   await appendFile(
     moduleFallbackLogsFilePath,
     `\n\n${await getImportCounterStr('moduleFallback', results.resolvedId)}:\n${Object.keys(

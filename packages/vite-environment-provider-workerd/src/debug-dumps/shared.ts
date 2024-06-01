@@ -8,13 +8,15 @@ const runNumber =
     '0',
   );
 const runName = `dev_run_${runNumber}`;
-const runDir = `${runsDir}/${runName}`;
-await mkdir(runDir, { recursive: true });
-
-export { runDir };
-
+export const runDir = `${runsDir}/${runName}`;
 const allImportsFilePath = `${runDir}/all-imports.txt`;
-await writeFile(allImportsFilePath, '');
+
+export const debugDumpsEnabled = !!process.env['DEBUG_DUMPS'];
+
+if (debugDumpsEnabled) {
+  await mkdir(runDir, { recursive: true });
+  await writeFile(allImportsFilePath, '');
+}
 
 let importsCounter = 0;
 

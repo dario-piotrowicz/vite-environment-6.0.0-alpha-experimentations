@@ -7,6 +7,7 @@
     "build": "remix vite:build",
     "deploy": "npm run build && wrangler pages deploy ./build/client",
     "dev": "remix vite:dev",
+    "dev:debug": "DEBUG_DUMPS=true remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "wrangler pages dev ./build/client",
     "typecheck": "tsc",

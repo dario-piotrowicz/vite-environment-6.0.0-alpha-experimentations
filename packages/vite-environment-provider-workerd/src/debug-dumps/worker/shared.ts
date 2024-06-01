@@ -1,7 +1,10 @@
 import { mkdir } from "fs/promises";
-import { runDir } from "../shared";
+import { runDir, debugDumpsEnabled } from "../shared";
 
 const workerRunDir = `${runDir}/worker`;
-await mkdir(workerRunDir);
+
+if(debugDumpsEnabled) {
+    await mkdir(workerRunDir);
+}
 
 export { workerRunDir };
