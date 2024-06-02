@@ -16,7 +16,7 @@ const buildWorkerConfig = defineConfig({
  * This configuration for our custom cjs import
  */
 const workerdCustomImportConfig = defineConfig({
-  entry: ['workerd-custom-import.cts'],
+  entry: ['src/workerd-custom-import.cts'],
   outDir: 'dist',
   format: ['cjs'],
   platform: 'node',
