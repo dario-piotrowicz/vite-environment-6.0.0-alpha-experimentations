@@ -6,7 +6,7 @@ import {
 import type * as http from 'node:http';
 import { nodeVMEnvironmentProvider } from '@dario-hacking/vite-6-alpha-environment-provider-node-vm';
 
-export function exampleFramework({
+export function dummyFramework({
   entrypoint,
   env,
 }: {

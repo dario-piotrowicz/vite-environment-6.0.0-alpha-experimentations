@@ -1,5 +1,5 @@
 import type { UserConfig } from 'vite';
-import { exampleFramework } from './frameworkPlugin';
+import { dummyFramework } from './frameworkPlugin';
 
 const config: UserConfig = {
   appType: 'custom',
@@ -18,7 +18,7 @@ const config: UserConfig = {
     include: [],
   },
   plugins: [
-    exampleFramework({
+    dummyFramework({
       env: process.env['vite_env'] === 'workerd' ? 'workerd' : 'node-vm',
       entrypoint:
         process.env['vite_env'] === 'workerd'
