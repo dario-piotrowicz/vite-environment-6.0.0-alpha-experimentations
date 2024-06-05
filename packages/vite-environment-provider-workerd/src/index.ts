@@ -3,6 +3,7 @@ import {
   BuildEnvironment,
   type HMRChannel,
   type ResolvedConfig,
+  type Plugin,
 } from 'vite';
 
 import {
@@ -30,7 +31,7 @@ export type DevEnvironment = ViteDevEnvironment & {
   };
 };
 
-export type WorkerdEnvironmentProviderOptions = {
+export type WorkerdEnvironmentOptions = {
   config?: string;
 };
 
@@ -43,35 +44,64 @@ export type EnvironmentMetadata = {
   runtimeName: string;
 };
 
-export type ViteEnvironmentProvider =
-  // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
-  //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
-  //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
-  {
-    metadata: EnvironmentMetadata;
-    dev: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<DevEnvironment>;
-    };
-    build: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<BuildEnvironment>;
-    };
+export function workerd(
+  userOptions: WorkerdEnvironmentOptions,
+): typeof workerdEnvironment {
+  return (
+    environmentName: string,
+    pluginConsumerOptions: WorkerdEnvironmentOptions,
+  ) => {
+    // we deep merge the options from the caller into the user options here, we do this so
+    // that consumers of this plugin are able to override/augment/tweak the options if need be
+    const pluginOptions = deepMergeOptions(userOptions, pluginConsumerOptions);
+    return workerdEnvironment(environmentName, pluginOptions);
   };
+}
 
-export async function workerdEnvironmentProvider(
-  options: WorkerdEnvironmentProviderOptions = {},
-): Promise<ViteEnvironmentProvider> {
-  // we're not really reading the configuration, the following console.log
-  // just exemplifies such workflow
-  console.log(
-    `(pretend that we're...) reading configuration from ${options.config}...`,
-  );
+/**
+ * Deep merged the a set of options onto another and returns the result of the operation
+ * (the function does not modify the argument options themselves)
+ * @param target the target/base options object
+ * @param source the new options to merge into the target
+ * @returns the target options object merged with the options from the source object
+ */
+function deepMergeOptions(
+  target: WorkerdEnvironmentOptions,
+  source: WorkerdEnvironmentOptions,
+): WorkerdEnvironmentOptions {
+  // the "deep merging" right now is very trivial... with a realistic/more complex
+  // options structure we'd have to do a real deep merge here
+  return {
+    config: target.config ?? source.config,
+  };
+}
 
+export function workerdEnvironment(
+  environmentName: string,
+  options: WorkerdEnvironmentOptions = {},
+): Plugin[] {
+  return [
+    {
+      name: 'workerd-environment-plugin',
+
+      async config() {
+        // we're not really reading the configuration, the following console.log
+        // just exemplifies such workflow
+        console.log(
+          `(pretend that we're...) reading configuration from ${options.config}...`,
+        );
+
+        return {
+          environments: {
+            [environmentName]: createWorkerdEnvironment(),
+          },
+        };
+      },
+    },
+  ];
+}
+
+export function createWorkerdEnvironment() {
   return {
     metadata: { runtimeName },
     dev: {

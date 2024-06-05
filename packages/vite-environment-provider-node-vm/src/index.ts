@@ -3,6 +3,7 @@ import {
   BuildEnvironment,
   type HMRChannel,
   type ResolvedConfig,
+  type Plugin,
 } from 'vite';
 
 import EventEmitter from 'node:events';
@@ -20,29 +21,61 @@ export type EnvironmentMetadata = {
   runtimeName: string;
 };
 
-export type ViteEnvironmentProvider =
-  // Note: ViteEnvironmentProvider needs to return `createEnvironment`s for both `dev` and `build`!
-  //       if a plugin then doesn't need both (e.g. they want the build to be done on a different environment)
-  //       they can just pick from/tweak the ViteEnvironmentProvider by themselves
-  {
-    metadata: EnvironmentMetadata;
-    dev: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<DevEnvironment>;
-    };
-    build: {
-      createEnvironment(
-        name: string,
-        config: ResolvedConfig,
-      ): Promise<BuildEnvironment>;
-    };
+export function nodeVm(
+  userOptions?: NodeVMEnvironmentProviderOptions,
+): typeof nodeVMEnvironment {
+  const environmentPlugin = (
+    environmentName: string,
+    pluginConsumerOptions?: NodeVMEnvironmentProviderOptions,
+  ) => {
+    // we deep merge the options from the caller into the user options here, we do this so
+    // that consumers of this plugin are able to override/augment/tweak the options if need be
+    const pluginOptions = deepMergeOptions(userOptions, pluginConsumerOptions);
+    return nodeVMEnvironment(environmentName, pluginOptions);
   };
 
-export async function nodeVMEnvironmentProvider(
-  options: NodeVMEnvironmentProviderOptions = {},
-): Promise<ViteEnvironmentProvider> {
+  environmentPlugin.environmentMetadata = {};
+
+  return environmentPlugin;
+}
+
+/**
+ * Deep merged the a set of options onto another and returns the result of the operation
+ * (the function does not modify the argument options themselves)
+ * @param target the target/base options object
+ * @param source the new options to merge into the target
+ * @returns the target options object merged with the options from the source object
+ */
+function deepMergeOptions(
+  target: NodeVMEnvironmentProviderOptions,
+  source: NodeVMEnvironmentProviderOptions,
+): NodeVMEnvironmentProviderOptions {
+  // nothing really to do here... but this exemplifies that options would need to be merged at this point
+  return {};
+}
+
+export function nodeVMEnvironment(
+  environmentName: string,
+  _options: NodeVMEnvironmentProviderOptions = {},
+): Plugin[] {
+  return [
+    {
+      name: 'node:vm-environment-plugin',
+
+      async config() {
+        // we could use the provided options here...
+
+        return {
+          environments: {
+            [environmentName]: createNodeVmEnvironment(),
+          },
+        };
+      },
+    },
+  ];
+}
+
+export function createNodeVmEnvironment() {
   return {
     metadata: { runtimeName },
     dev: {
@@ -220,7 +253,7 @@ function createSimpleHMRChannel(
 }
 
 export type DevEnvironment = ViteDevEnvironment & {
-  metadata: EnvironmentMetadata;
+  // metadata: EnvironmentMetadata;
   api: {
     getHandler: ({
       entrypoint,
