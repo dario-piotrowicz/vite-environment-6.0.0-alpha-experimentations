@@ -10,7 +10,7 @@ export default defineConfig({
     remix({
       // @ts-ignore
       ssrEnvironment: workerd({
-        config: './remix-wrangler.toml',
+        config: './wrangler.toml',
       }),
     }),
     tsconfigPaths(),
