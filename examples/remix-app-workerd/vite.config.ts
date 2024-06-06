@@ -15,14 +15,4 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
-  // TO CHANGE IN THIS WAY 👇
-  // plugins: [
-  //   remix({
-  //     // the `workerdEnvironmentPluginFactory` this name is NOT ok for the end user!
-  //     ssrEnvironment: workerdEnvironmentPluginFactory({
-  //       config: './remix-wrangler.toml',
-  //     }),
-  //   }),
-  //   tsconfigPaths(),
-  // ],
 });
