@@ -24,7 +24,7 @@ export type EnvironmentMetadata = {
 export function nodeVm(
   userOptions?: NodeVMEnvironmentProviderOptions,
 ): typeof nodeVMEnvironment {
-  const environmentPlugin = (
+  return (
     environmentName: string,
     pluginConsumerOptions?: NodeVMEnvironmentProviderOptions,
   ) => {
@@ -33,10 +33,6 @@ export function nodeVm(
     const pluginOptions = deepMergeOptions(userOptions, pluginConsumerOptions);
     return nodeVMEnvironment(environmentName, pluginOptions);
   };
-
-  environmentPlugin.environmentMetadata = {};
-
-  return environmentPlugin;
 }
 
 /**
@@ -253,7 +249,7 @@ function createSimpleHMRChannel(
 }
 
 export type DevEnvironment = ViteDevEnvironment & {
-  // metadata: EnvironmentMetadata;
+  metadata: EnvironmentMetadata;
   api: {
     getHandler: ({
       entrypoint,
