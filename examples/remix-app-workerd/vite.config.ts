@@ -2,12 +2,14 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { workerdEnvironmentProvider } from '@dario-hacking/vite-6-alpha-environment-provider-workerd';
+import { workerd } from '@dario-hacking/vite-6-alpha-environment-provider-workerd';
 
 export default defineConfig({
   plugins: [
+    // @ts-ignore
     remix({
-      ssrEnvironment: await workerdEnvironmentProvider({
+      // @ts-ignore
+      ssrEnvironment: workerd({
         config: './remix-wrangler.toml',
       }),
     }),
