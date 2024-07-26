@@ -3,6 +3,7 @@ import {
   workerdEnvironment,
   type DevEnvironment,
 } from '@dario-hacking/vite-6-alpha-environment-provider-workerd';
+import { nodeProcessEnvironment } from '@dario-hacking/vite-6-alpha-environment-provider-node-process';
 import type * as http from 'node:http';
 import { nodeVMEnvironment } from '@dario-hacking/vite-6-alpha-environment-provider-node-vm';
 
@@ -13,12 +14,14 @@ export function dummyFramework({
   env,
 }: {
   entrypoint: string;
-  env: 'workerd' | 'node-vm';
+  env: 'workerd' | 'node-process' | 'node-vm';
 }): Plugin[] {
   const environmentPlugin =
     env === 'workerd'
       ? workerdEnvironment(ssrEnvName)
-      : nodeVMEnvironment(ssrEnvName);
+      : env === 'node-process'
+        ? nodeProcessEnvironment(ssrEnvName)
+        : nodeVMEnvironment(ssrEnvName);
 
   return [
     ...environmentPlugin,

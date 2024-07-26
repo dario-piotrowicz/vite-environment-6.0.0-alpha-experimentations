@@ -131,11 +131,54 @@ async function createNodeVmDevEnvironment(
     eventEmitter,
   });
 
+  // const script = `
+  //   let _moduleRunner;
+  //   async function getModuleRunner() {
+  //     if (_moduleRunner) return _moduleRunner;
+  //     const { ModuleRunner } = await import("vite/module-runner");
+  //     _moduleRunner = new ModuleRunner(
+  //         {
+  //           root: config.root,
+  //           transport: {
+  //             fetchModule: async (...args) => devEnv.fetchModule(...args),
+  //           },
+  //           hmr: {
+  //             connection: {
+  //               isReady: () => true,
+  //               onUpdate(callback) {
+  //                 eventEmitter.on("message", (event) => {
+  //                   callback(JSON.parse(event));
+  //                 });
+  //               },
+  //               send(message) {
+  //                 eventEmitter.emit("message",JSON.stringify(message));
+  //               },
+  //             },
+  //           },
+  //         },
+  //         {
+  //           runInlinedModule: async (context, transformed, id) => {
+  //             const codeDefinition = \`'use strict';async (\${Object.keys(context).join(
+  //               ',',
+  //             )})=>{{\`;
+  //             const code = \`\${codeDefinition}\${transformed}\n}}\`;
+  //             const fn = eval(code, id);
+  //             await fn(...Object.values(context));
+  //             Object.freeze(context.__vite_ssr_exports__);
+  //           },
+  //           async runExternalModule(filepath) {
+  //             return import(filepath);
+  //           },
+  //         },
+  //     );
+  //     return _moduleRunner;
+  //   }
+
   const script = `
     let _moduleRunner;
     async function getModuleRunner() {
       if (_moduleRunner) return _moduleRunner;
-      const { ModuleRunner } = await import("vite/module-runner");
+      const { ModuleRunner, ESModulesEvaluator } = await import("vite/module-runner");
       _moduleRunner = new ModuleRunner(
           {
             root: config.root,
@@ -156,20 +199,7 @@ async function createNodeVmDevEnvironment(
               },
             },
           },
-          {
-            runInlinedModule: async (context, transformed, id) => {
-              const codeDefinition = \`'use strict';async (\${Object.keys(context).join(
-                ',',
-              )})=>{{\`;
-              const code = \`\${codeDefinition}\${transformed}\n}}\`;
-              const fn = eval(code, id);
-              await fn(...Object.values(context));
-              Object.freeze(context.__vite_ssr_exports__);
-            },
-            async runExternalModule(filepath) {
-              return import(filepath);
-            },
-          },
+          new ESModulesEvaluator()
       );
       return _moduleRunner;
     }

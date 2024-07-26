@@ -2,7 +2,7 @@
   "name": "vite-environment-6.0.0-alpha-experimentations",
   "scripts": {
     "postinstall": "pnpm build:packages",
-    "build:packages": "pnpm --filter '@dario-hacking/vite-6-alpha-environment-provider-workerd' --filter '@dario-hacking/vite-6-alpha-environment-provider-node-vm' --sequential build",
+    "build:packages": "pnpm --filter '@dario-hacking/vite-6-alpha-environment-provider-workerd' --filter '@dario-hacking/vite-6-alpha-environment-provider-node-process' --filter '@dario-hacking/vite-6-alpha-environment-provider-node-vm' --sequential build",
     "prettify": "prettier --ignore-path .gitignore --write ."
   },
   "license": "MIT",

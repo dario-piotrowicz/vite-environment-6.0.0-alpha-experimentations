@@ -19,11 +19,18 @@ const config: UserConfig = {
   },
   plugins: [
     dummyFramework({
-      env: process.env['vite_env'] === 'workerd' ? 'workerd' : 'node-vm',
+      env:
+        process.env['vite_env'] === 'workerd'
+          ? 'workerd'
+          : process.env['vite_env'] === 'node-process'
+            ? 'node-process'
+            : 'node-vm',
       entrypoint:
         process.env['vite_env'] === 'workerd'
           ? './entry-workerd.ts'
-          : './entry-node-vm.ts',
+          : process.env['vite_env'] === 'node-process'
+            ? './entry-node-process.ts'
+            : './entry-node-vm.ts',
     }),
   ],
 };

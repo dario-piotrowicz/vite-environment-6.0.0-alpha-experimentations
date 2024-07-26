@@ -30,6 +30,9 @@ importers:
         specifier: ^5.3.3
         version: 5.4.5
     devDependencies:
+      '@dario-hacking/vite-6-alpha-environment-provider-node-process':
+        specifier: workspace:*
+        version: link:../../packages/vite-environment-provider-node-process
       '@dario-hacking/vite-6-alpha-environment-provider-node-vm':
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
