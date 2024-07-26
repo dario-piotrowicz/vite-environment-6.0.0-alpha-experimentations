@@ -15,7 +15,7 @@
       "@remix-run/dev": "npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-4"
     },
     "patchedDependencies": {
-      "vite@6.0.0-alpha.11": "patches/vite@6.0.0-alpha.11.patch"
+      "vite@6.0.0-alpha.18": "patches/vite@6.0.0-alpha.18.patch"
     }
   }
 }

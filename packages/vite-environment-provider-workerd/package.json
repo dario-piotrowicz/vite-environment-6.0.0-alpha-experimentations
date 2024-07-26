@@ -20,8 +20,8 @@
     "@types/node": "^20.11.19",
     "esbuild": "^0.15.3",
     "tsup": "^8.0.2",
-    "typescript": "^5.0.4",
-    "vite": "^6.0.0-alpha.11"
+    "vite": "^6.0.0-alpha.18",
+    "typescript": "^5.0.4"
   },
   "peerDependencies": {
     "miniflare": "^3.20240129.3",

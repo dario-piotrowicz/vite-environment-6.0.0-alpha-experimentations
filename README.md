@@ -28,9 +28,7 @@ to install all the dependencies and build all the packages in this repository, t
 
 ## Extra info
 
-- the vite dependency is slightly outdated and set to `vite@6.0.0-alpha.11`
-
-- we patch the vite dependency (see: `patches/vite@6.0.0-alpha.11.patch`) because the Vite implementation lacks customization options in their resolver, this should hopefully get fixed soon: https://github.com/vitejs/vite/pull/16471#discussion_r1619160848
+- we patch the vite dependency (see: `patches/vite@6.0.0-alpha.18.patch`) because the Vite implementation lacks customization options in their resolver, this should hopefully get fixed soon: https://github.com/vitejs/vite/pull/16471#discussion_r1619160848
 
 ### Credits & References
 

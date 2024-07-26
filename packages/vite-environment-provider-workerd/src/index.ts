@@ -1,7 +1,7 @@
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  type HMRChannel,
+  type HotChannel,
   type ResolvedConfig,
   type Plugin,
 } from 'vite';
@@ -309,7 +309,7 @@ async function createWorkerdDevEnvironment(
     );
   }
 
-  const hot = webSocket ? createHMRChannel(webSocket!, name) : false;
+  const hot = webSocket ? createHotChannel(webSocket!) : false;
 
   const devEnv = new ViteDevEnvironment(name, config, {
     hot,
@@ -350,7 +350,7 @@ async function createWorkerdDevEnvironment(
 
   return devEnv;
 }
-function createHMRChannel(webSocket: WebSocket, name: string): HMRChannel {
+function createHotChannel(webSocket: WebSocket): HotChannel {
   webSocket.accept();
 
   const hotEventListenersMap = new Map<
@@ -360,7 +360,6 @@ function createHMRChannel(webSocket: WebSocket, name: string): HMRChannel {
   let hotDispose: (() => void) | undefined;
 
   return {
-    name,
     listen() {
       const listener: TypedEventListener<MessageEvent> = data => {
         const payload = JSON.parse(data as unknown as string);
