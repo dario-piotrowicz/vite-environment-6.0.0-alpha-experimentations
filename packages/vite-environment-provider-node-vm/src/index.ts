@@ -1,7 +1,7 @@
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  type HMRChannel,
+  type HotChannel,
   type ResolvedConfig,
   type Plugin,
 } from 'vite';
@@ -108,7 +108,7 @@ async function createNodeVmDevEnvironment(
 ): Promise<DevEnvironment> {
   const eventEmitter = new EventEmitter();
 
-  const hot = createSimpleHMRChannel(eventEmitter, name);
+  const hot = createSimpleHotChannel(eventEmitter);
 
   const devEnv = new ViteDevEnvironment(name, config, { hot });
 
@@ -193,10 +193,9 @@ async function createNodeVmDevEnvironment(
   return devEnv as DevEnvironment;
 }
 
-function createSimpleHMRChannel(
+function createSimpleHotChannel(
   eventEmitter: EventEmitter,
-  name: string,
-): HMRChannel {
+): HotChannel {
   let hotDispose: (() => void) | undefined;
 
   const hotEventListenersMap = new Map<
@@ -205,7 +204,6 @@ function createSimpleHMRChannel(
   >();
 
   return {
-    name,
     listen() {
       const listener = (data: any) => {
         const payload = JSON.parse(data as unknown as string);

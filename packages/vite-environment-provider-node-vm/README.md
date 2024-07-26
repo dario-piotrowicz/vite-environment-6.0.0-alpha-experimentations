@@ -3,7 +3,7 @@
 Package that exports a `nodeVmEnvironmentProvider` function that can be used to set a Vite Environment to run code inside a [Node.js `vm` module](https://nodejs.org/api/vm.html).
 
 > [!NOTE]
-> Based on the [vite@6.0.0-alpha.11](https://www.npmjs.com/package/vite/v/6.0.0-alpha.11) Environment API implementation.
+> Based on the [vite@6.0.0-alpha.18](https://www.npmjs.com/package/vite/v/6.0.0-alpha.18) Environment API implementation.
 
 ## Package Usage
 
