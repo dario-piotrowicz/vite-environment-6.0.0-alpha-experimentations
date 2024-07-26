@@ -231,6 +231,24 @@ importers:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240423.0)
 
+  packages/vite-environment-provider-node-process:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.19
+        version: 20.12.7
+      esbuild:
+        specifier: ^0.15.3
+        version: 0.15.18
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(postcss@8.4.38)(typescript@5.4.5)
+      typescript:
+        specifier: ^5.0.4
+        version: 5.4.5
+      vite:
+        specifier: ^6.0.0-alpha.11
+        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
+
   packages/vite-environment-provider-node-vm:
     devDependencies:
       '@types/node':
