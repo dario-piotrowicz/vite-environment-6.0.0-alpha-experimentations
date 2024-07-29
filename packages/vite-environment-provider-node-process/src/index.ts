@@ -62,12 +62,9 @@ async function createNodeProcessDevEnvironment(
   name: string,
   config: ResolvedConfig,
 ): Promise<DevEnvironment> {
-  // TODO: add HMR
-
   const childProcessPath = fileURLToPath(
     new URL('child-process/index.js', import.meta.url),
   );
-
   const childProcess = spawn('node', [childProcessPath]);
 
   const devEnv = new ViteDevEnvironment(name, config, {
@@ -87,6 +84,8 @@ async function createNodeProcessDevEnvironment(
         },
       }),
     },
+    // TODO: add HMR
+    hot: false,
   }) as DevEnvironment;
 
   let initialized = false;

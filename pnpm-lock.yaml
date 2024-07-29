@@ -249,8 +249,8 @@ importers:
         specifier: ^5.0.4
         version: 5.4.5
       vite:
-        specifier: ^6.0.0-alpha.11
-        version: 6.0.0-alpha.11(patch_hash=jknebzkwjvbd3ucmhgbrsvwgf4)(@types/node@20.12.7)
+        specifier: ^6.0.0-alpha.18
+        version: 6.0.0-alpha.18(patch_hash=mlojamv7ahaqbokpye3wuthwq4)(@types/node@20.12.7)
 
   packages/vite-environment-provider-node-vm:
     devDependencies:
