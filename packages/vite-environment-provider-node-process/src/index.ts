@@ -1,13 +1,13 @@
 import {
   DevEnvironment as ViteDevEnvironment,
+  RemoteEnvironmentTransport,
   BuildEnvironment,
-  type HMRChannel,
   type ResolvedConfig,
   type Plugin,
 } from 'vite';
-
-// TEMP
-import { ModuleRunner, ESModulesEvaluator } from 'vite/module-runner';
+import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
+import { objectToResponse } from './utils';
 
 const runtimeName = 'node:process';
 
@@ -49,39 +49,6 @@ function createNodeProcessEnvironment() {
   };
 }
 
-async function createNodeProcessDevEnvironment(
-  name: string,
-  config: ResolvedConfig,
-): Promise<DevEnvironment> {
-  // TODO: add HMR
-  const devEnv = new ViteDevEnvironment(name, config) as DevEnvironment;
-
-  devEnv.api = {
-    async getHandler({ entrypoint }) {
-      async function getModuleRunner() {
-        const _moduleRunner = new ModuleRunner(
-          {
-            root: config.root,
-            transport: {
-              fetchModule: async (...args) => devEnv.fetchModule(...args),
-            },
-          },
-          new ESModulesEvaluator(),
-        );
-
-        return _moduleRunner;
-      }
-
-      const moduleRunner = await getModuleRunner();
-      const entry = await moduleRunner.import(entrypoint);
-
-      return entry.default;
-    },
-  };
-
-  return devEnv;
-}
-
 async function createNodeProcessBuildEnvironment(
   name: string,
   config: ResolvedConfig,
@@ -89,6 +56,85 @@ async function createNodeProcessBuildEnvironment(
   const buildEnv = new BuildEnvironment(name, config);
 
   return buildEnv;
+}
+
+async function createNodeProcessDevEnvironment(
+  name: string,
+  config: ResolvedConfig,
+): Promise<DevEnvironment> {
+  // TODO: add HMR
+
+  const childProcessPath = fileURLToPath(
+    new URL('child-process/index.js', import.meta.url),
+  );
+
+  const childProcess = spawn('node', [childProcessPath]);
+
+  const devEnv = new ViteDevEnvironment(name, config, {
+    runner: {
+      transport: new RemoteEnvironmentTransport({
+        send: data => {
+          childProcess.stdin.write(JSON.stringify({ type: 'transport', data }));
+        },
+        onMessage: listener => {
+          childProcess.stdout.on('data', data => {
+            const parsedData = JSON.parse(data);
+
+            if (parsedData.type === 'transport') {
+              listener(parsedData.data);
+            }
+          });
+        },
+      }),
+    },
+  }) as DevEnvironment;
+
+  let initialized = false;
+
+  devEnv.api = {
+    async getHandler({ entrypoint }) {
+      if (!initialized) {
+        initialized = await new Promise(resolve => {
+          function initializedListener(data: any) {
+            const parsedData = JSON.parse(data);
+
+            if (parsedData.type === 'initialized') {
+              childProcess.stdout.removeListener('data', initializedListener);
+              resolve(true);
+            }
+          }
+
+          childProcess.stdout.on('data', initializedListener);
+          childProcess.stdin.write(
+            JSON.stringify({
+              type: 'initialize',
+              data: { root: config.root, entrypoint },
+            }),
+          );
+        });
+      }
+
+      return async (request: Request) => {
+        const response = await new Promise<Response>(resolve => {
+          function responseListener(data: any) {
+            const parsedData = JSON.parse(data);
+
+            if (parsedData.type === 'response') {
+              childProcess.stdout.removeListener('data', responseListener);
+              resolve(objectToResponse(parsedData.data));
+            }
+          }
+
+          childProcess.stdout.on('data', responseListener);
+          childProcess.stdin.write(JSON.stringify({ type: 'request' }));
+        });
+
+        return response;
+      };
+    },
+  };
+
+  return devEnv;
 }
 
 type EnvironmentMetadata = {

@@ -1,5 +1,12 @@
 import { defineConfig } from 'tsup';
 
+const buildChildProcessConfig = defineConfig({
+  entry: ['src/child-process/index.ts'],
+  outDir: 'dist/child-process',
+  format: ['esm'],
+  platform: 'node',
+});
+
 const buildPluginConfig = defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
@@ -14,4 +21,4 @@ const buildPluginConfig = defineConfig({
   ],
 });
 
-export default [buildPluginConfig];
+export default [buildChildProcessConfig, buildPluginConfig];
