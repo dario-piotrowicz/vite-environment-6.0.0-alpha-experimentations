@@ -135,7 +135,7 @@ async function createNodeVmDevEnvironment(
     let _moduleRunner;
     async function getModuleRunner() {
       if (_moduleRunner) return _moduleRunner;
-      const { ModuleRunner } = await import("vite/module-runner");
+      const { ModuleRunner, ESModulesEvaluator } = await import("vite/module-runner");
       _moduleRunner = new ModuleRunner(
           {
             root: config.root,
@@ -156,20 +156,7 @@ async function createNodeVmDevEnvironment(
               },
             },
           },
-          {
-            runInlinedModule: async (context, transformed, id) => {
-              const codeDefinition = \`'use strict';async (\${Object.keys(context).join(
-                ',',
-              )})=>{{\`;
-              const code = \`\${codeDefinition}\${transformed}\n}}\`;
-              const fn = eval(code, id);
-              await fn(...Object.values(context));
-              Object.freeze(context.__vite_ssr_exports__);
-            },
-            async runExternalModule(filepath) {
-              return import(filepath);
-            },
-          },
+          new ESModulesEvaluator()
       );
       return _moduleRunner;
     }
@@ -193,9 +180,7 @@ async function createNodeVmDevEnvironment(
   return devEnv as DevEnvironment;
 }
 
-function createSimpleHotChannel(
-  eventEmitter: EventEmitter,
-): HotChannel {
+function createSimpleHotChannel(eventEmitter: EventEmitter): HotChannel {
   let hotDispose: (() => void) | undefined;
 
   const hotEventListenersMap = new Map<
