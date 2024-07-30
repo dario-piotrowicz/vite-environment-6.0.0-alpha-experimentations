@@ -6,7 +6,7 @@ import {
 import { responseToObject } from '../utils';
 
 async function getModuleRunner(root: string) {
-  const _moduleRunner = new ModuleRunner(
+  return new ModuleRunner(
     {
       root,
       transport: new RemoteRunnerTransport({
@@ -26,8 +26,6 @@ async function getModuleRunner(root: string) {
     },
     new ESModulesEvaluator(),
   );
-
-  return _moduleRunner;
 }
 
 let entry;

@@ -28,9 +28,7 @@ const config: UserConfig = {
       entrypoint:
         process.env['vite_env'] === 'workerd'
           ? './entry-workerd.ts'
-          : process.env['vite_env'] === 'node-process'
-            ? './entry-node-process.ts'
-            : './entry-node-vm.ts',
+          : './entry-node.ts',
     }),
   ],
 };
