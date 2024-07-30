@@ -7,6 +7,11 @@ import {
 } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import {
+  processNonEvent,
+  createParentEvent,
+  processChildEvent,
+} from './events';
 import { objectToResponse } from './utils';
 
 const runtimeName = 'node:process';
@@ -67,25 +72,37 @@ async function createNodeProcessDevEnvironment(
   );
   const childProcess = spawn('node', [childProcessPath]);
 
+  // forward console output from child process
+  childProcess.stdout.on('data', data => {
+    processNonEvent(data, input => console.log(input));
+  });
+
   const devEnv = new ViteDevEnvironment(name, config, {
     runner: {
       transport: new RemoteEnvironmentTransport({
         send: data => {
-          childProcess.stdin.write(JSON.stringify({ type: 'transport', data }));
+          childProcess.stdin.write(createParentEvent('transport', data));
         },
         onMessage: listener => {
           childProcess.stdout.on('data', data => {
-            const parsedData = JSON.parse(data);
-
-            if (parsedData.type === 'transport') {
-              listener(parsedData.data);
-            }
+            processChildEvent(data, event => {
+              if (event.type === 'transport') {
+                listener(event.data);
+              }
+            });
           });
         },
       }),
     },
-    // TODO: add HMR
-    hot: false,
+    hot: {
+      send: data => {
+        childProcess.stdin.write(createParentEvent('hmr', data));
+      },
+      on: () => {},
+      off: () => {},
+      listen: () => {},
+      close: () => {},
+    },
   }) as DevEnvironment;
 
   let initialized = false;
@@ -95,20 +112,17 @@ async function createNodeProcessDevEnvironment(
       if (!initialized) {
         initialized = await new Promise(resolve => {
           function initializedListener(data: any) {
-            const parsedData = JSON.parse(data);
-
-            if (parsedData.type === 'initialized') {
-              childProcess.stdout.removeListener('data', initializedListener);
-              resolve(true);
-            }
+            processChildEvent(data, event => {
+              if (event.type === 'initialized') {
+                childProcess.stdout.removeListener('data', initializedListener);
+                resolve(true);
+              }
+            });
           }
 
           childProcess.stdout.on('data', initializedListener);
           childProcess.stdin.write(
-            JSON.stringify({
-              type: 'initialize',
-              data: { root: config.root, entrypoint },
-            }),
+            createParentEvent('initialize', { root: config.root, entrypoint }),
           );
         });
       }
@@ -116,16 +130,16 @@ async function createNodeProcessDevEnvironment(
       return async (request: Request) => {
         const response = await new Promise<Response>(resolve => {
           function responseListener(data: any) {
-            const parsedData = JSON.parse(data);
-
-            if (parsedData.type === 'response') {
-              childProcess.stdout.removeListener('data', responseListener);
-              resolve(objectToResponse(parsedData.data));
-            }
+            processChildEvent(data, event => {
+              if (event.type === 'response') {
+                childProcess.stdout.removeListener('data', responseListener);
+                resolve(objectToResponse(event.data));
+              }
+            });
           }
 
           childProcess.stdout.on('data', responseListener);
-          childProcess.stdin.write(JSON.stringify({ type: 'request' }));
+          childProcess.stdin.write(createParentEvent('request'));
         });
 
         return response;
