@@ -1,7 +1,7 @@
 const PREFIX = '__PRIVATE__';
 
-type ParentEvent = 'initialize' | 'hmr' | 'request' | 'transport';
-type ChildEvent = 'initialized' | 'response' | 'transport';
+type ParentEvent = 'initialize' | 'hmr' | 'transport';
+type ChildEvent = 'initialized' | 'transport';
 
 function createEventCreator<T extends string>() {
   return (type: T, data?: any) => {

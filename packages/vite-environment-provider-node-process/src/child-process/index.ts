@@ -3,8 +3,10 @@ import {
   ESModulesEvaluator,
   RemoteRunnerTransport,
 } from 'vite/module-runner';
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import getPort from 'get-port';
 import { processParentEvent, createChildEvent } from '../events';
-import { responseToObject } from '../utils';
 
 async function getModuleRunner(root: string) {
   return new ModuleRunner(
@@ -44,25 +46,21 @@ async function getModuleRunner(root: string) {
   );
 }
 
-let entry;
-
 process.stdin.on('data', async data => {
   processParentEvent(data, async event => {
-    switch (event.type) {
-      case 'initialize': {
-        const { root, entrypoint } = event.data;
-        const moduleRunner = await getModuleRunner(root);
-        entry = await moduleRunner.import(entrypoint);
+    if (event.type === 'initialize') {
+      const { root, entrypoint } = event.data;
+      const moduleRunner = await getModuleRunner(root);
+      const entry = await moduleRunner.import(entrypoint);
+      const app = new Hono();
 
-        process.stdout.write(createChildEvent('initialized'));
-      }
-      case 'request': {
-        const response = await entry.default();
+      app.all('*', c => {
+        return entry.default(c.req.raw);
+      });
 
-        process.stdout.write(
-          createChildEvent('response', await responseToObject(response)),
-        );
-      }
+      serve({ fetch: app.fetch, port: await getPort() }, ({ port }) => {
+        process.stdout.write(createChildEvent('initialized', { port }));
+      });
     }
   });
 });

@@ -12,7 +12,6 @@ import {
   createParentEvent,
   processChildEvent,
 } from './events';
-import { objectToResponse } from './utils';
 
 const runtimeName = 'node:process';
 
@@ -105,17 +104,17 @@ async function createNodeProcessDevEnvironment(
     },
   }) as DevEnvironment;
 
-  let initialized = false;
+  let port: number;
 
   devEnv.api = {
     async getHandler({ entrypoint }) {
-      if (!initialized) {
-        initialized = await new Promise(resolve => {
+      if (!port) {
+        port = await new Promise(resolve => {
           function initializedListener(data: any) {
             processChildEvent(data, event => {
               if (event.type === 'initialized') {
                 childProcess.stdout.removeListener('data', initializedListener);
-                resolve(true);
+                resolve(event.data.port);
               }
             });
           }
@@ -128,21 +127,11 @@ async function createNodeProcessDevEnvironment(
       }
 
       return async (request: Request) => {
-        const response = await new Promise<Response>(resolve => {
-          function responseListener(data: any) {
-            processChildEvent(data, event => {
-              if (event.type === 'response') {
-                childProcess.stdout.removeListener('data', responseListener);
-                resolve(objectToResponse(event.data));
-              }
-            });
-          }
+        const { url: originalUrl, ...rest } = request;
+        const url = new URL(originalUrl);
+        url.port = port.toString();
 
-          childProcess.stdout.on('data', responseListener);
-          childProcess.stdin.write(createParentEvent('request'));
-        });
-
-        return response;
+        return fetch(url, rest as RequestInit);
       };
     },
   };
