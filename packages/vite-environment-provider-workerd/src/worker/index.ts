@@ -93,8 +93,8 @@ async function getModuleRunner(env: Env) {
               callback(JSON.parse(event.data));
             });
           },
-          send(messages) {
-            hmrWebSocket.send(JSON.stringify(messages));
+          send(message) {
+            hmrWebSocket.send(message);
           },
         },
       },

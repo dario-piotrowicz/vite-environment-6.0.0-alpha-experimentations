@@ -2,6 +2,7 @@ import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
   type HotChannel,
+  type HotPayload,
   type ResolvedConfig,
   type Plugin,
 } from 'vite';
@@ -151,7 +152,7 @@ async function createNodeVmDevEnvironment(
                   });
                 },
                 send(message) {
-                  eventEmitter.emit("message",JSON.stringify(message));
+                  eventEmitter.emit("message", message);
                 },
               },
             },
@@ -181,42 +182,13 @@ async function createNodeVmDevEnvironment(
 }
 
 function createSimpleHotChannel(eventEmitter: EventEmitter): HotChannel {
-  let hotDispose: (() => void) | undefined;
-
-  const hotEventListenersMap = new Map<
-    string,
-    Set<(...args: any[]) => unknown>
-  >();
+  const listenersMap = new Map<string, Set<Function>>();
+  let hotDispose: () => void;
 
   return {
-    listen() {
-      const listener = (data: any) => {
-        const payload = JSON.parse(data as unknown as string);
-        for (const f of hotEventListenersMap.get(payload.event)!) {
-          f(payload.data);
-        }
-      };
+    send(...args) {
+      let payload: HotPayload;
 
-      eventEmitter.on('message', listener as any);
-      hotDispose = () => {
-        eventEmitter.off('message', listener as any);
-      };
-    },
-    close() {
-      hotDispose?.();
-      hotDispose = undefined;
-    },
-    on(event: string, listener: (...args: any[]) => any) {
-      if (!hotEventListenersMap.get(event)) {
-        hotEventListenersMap.set(event, new Set());
-      }
-      hotEventListenersMap.get(event)!.add(listener);
-    },
-    off(event: string, listener: (...args: any[]) => any) {
-      hotEventListenersMap.get(event)!.delete(listener);
-    },
-    send(...args: any[]) {
-      let payload: any;
       if (typeof args[0] === 'string') {
         payload = {
           type: 'custom',
@@ -226,7 +198,41 @@ function createSimpleHotChannel(eventEmitter: EventEmitter): HotChannel {
       } else {
         payload = args[0];
       }
+
       eventEmitter.emit('message', JSON.stringify(payload));
+    },
+    on(event, listener) {
+      if (!listenersMap.get(event)) {
+        listenersMap.set(event, new Set());
+      }
+
+      listenersMap.get(event).add(listener);
+    },
+    off(event, listener) {
+      listenersMap.get(event)?.delete(listener);
+    },
+    listen() {
+      function eventListener(data: string) {
+        const payload = JSON.parse(data);
+
+        if (!listenersMap.get(payload.event)) {
+          listenersMap.set(payload.event, new Set());
+        }
+
+        for (const fn of listenersMap.get(payload.event)) {
+          fn(payload.data);
+        }
+      }
+
+      eventEmitter.on('message', eventListener);
+
+      hotDispose = () => {
+        eventEmitter.off('message', eventListener);
+      };
+    },
+    close() {
+      hotDispose?.();
+      hotDispose = undefined;
     },
   };
 }
