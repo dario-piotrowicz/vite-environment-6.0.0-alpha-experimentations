@@ -5,6 +5,15 @@ if (import.meta.hot) {
     );
 
     import.meta.hot.send('ssr-event', 'Hello from ssr environment');
+
+    import.meta.hot.data.count =
+      typeof import.meta.hot.data.count === 'number'
+        ? import.meta.hot.data.count + 1
+        : 0;
+
+    console.log(
+      `Updated count (import.meta.hot.data is working). New count value is ${import.meta.hot.data.count}.`,
+    );
   });
 
   import.meta.hot.on('plugin-event', payload => {
@@ -19,6 +28,6 @@ export function getUserAgentText(): string {
     return 'navigator is undefined (running in Node.js?)';
   } else {
     const userAgent = navigator.userAgent;
-    return `navigator.userAgent = ${userAgent}`;
+    return `navigator.userAgent = ${userAgent}!`;
   }
 }
