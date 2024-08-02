@@ -1,42 +1,55 @@
 const PREFIX = '__PRIVATE__';
 
-type ParentEvent = 'initialize' | 'hmr' | 'transport';
-type ChildEvent = 'initialized' | 'transport';
+export type ParentEvent = 'initialize' | 'hmr' | 'transport';
+export type ChildEvent = 'initialized' | 'hmr' | 'transport';
 
-function createEventCreator<T extends string>() {
-  return (type: T, data?: any) => {
-    return `${PREFIX}${JSON.stringify({ type, data })}`;
+export type EventSender<T> = (type: T, data?: any) => void;
+
+export function createEventSender<T extends string>(
+  send: (event: string) => void,
+): EventSender<T> {
+  return (type, data) => {
+    send(`${PREFIX}${JSON.stringify({ type, data })}\n`);
   };
 }
 
-function createEventProcessor<T extends string>() {
-  return (
-    buffer: Buffer,
-    callback: (event: { type: T; data: any }) => void,
-  ) => {
-    const input = buffer.toString();
+type Listener<T> = (event: { type: T; data: any }) => void;
 
-    if (input.startsWith(PREFIX)) {
-      callback(JSON.parse(input.substring(PREFIX.length)));
-    }
+export interface EventReceiver<T> {
+  addListener(listener: Listener<T>): void;
+  removeListener(listener: Listener<T>): void;
+}
+
+export function createEventReceiver<T extends string>(
+  initRootListener: (listen: (data: Buffer) => void) => void,
+  nonEventListener?: (input: string) => void,
+): EventReceiver<T> {
+  const listeners = new Set<Listener<T>>();
+  let buffer = '';
+
+  initRootListener(data => {
+    buffer += data;
+    let lines = buffer.split('\n');
+
+    lines.slice(0, -1).forEach(line => {
+      if (line.startsWith(PREFIX)) {
+        listeners.forEach(listener =>
+          listener(JSON.parse(line.substring(PREFIX.length))),
+        );
+      } else {
+        nonEventListener?.(line);
+      }
+    });
+
+    buffer = lines[lines.length - 1];
+  });
+
+  return {
+    addListener(listener) {
+      listeners.add(listener);
+    },
+    removeListener(listener) {
+      listeners.delete(listener);
+    },
   };
 }
-
-export function processNonEvent(
-  buffer: Buffer,
-  callback: (input: string) => void,
-) {
-  const input = buffer.toString();
-
-  if (!input.startsWith(PREFIX)) {
-    callback(input);
-  }
-}
-
-// parent events
-export const createParentEvent = createEventCreator<ParentEvent>();
-export const processParentEvent = createEventProcessor<ParentEvent>();
-
-// child events
-export const createChildEvent = createEventCreator<ChildEvent>();
-export const processChildEvent = createEventProcessor<ChildEvent>();
