@@ -8,7 +8,7 @@ import { serve } from '@hono/node-server';
 import getPort from 'get-port';
 import {
   createEventSender,
-  createEventProcessor,
+  createEventReceiver,
   type ChildEvent,
   type ParentEvent,
 } from '../events';
@@ -16,7 +16,7 @@ import {
 const sendChildEvent = createEventSender<ChildEvent>(event => {
   process.stdout.write(event);
 });
-const parentEvent = createEventProcessor<ParentEvent>(listen => {
+const parentEventReceiver = createEventReceiver<ParentEvent>(listen => {
   process.stdin.on('data', listen);
 });
 
@@ -29,7 +29,7 @@ async function getModuleRunner(root: string) {
           sendChildEvent('transport', data);
         },
         onMessage: listener => {
-          parentEvent.addListener(event => {
+          parentEventReceiver.addListener(event => {
             if (event.type === 'transport') {
               listener(event.data);
             }
@@ -40,13 +40,15 @@ async function getModuleRunner(root: string) {
         connection: {
           isReady: () => true,
           onUpdate: callback => {
-            parentEvent.addListener(event => {
+            parentEventReceiver.addListener(event => {
               if (event.type === 'hmr') {
                 callback(event.data);
               }
             });
           },
-          send: () => {},
+          send: message => {
+            sendChildEvent('hmr', JSON.parse(message));
+          },
         },
       },
     },
@@ -54,7 +56,7 @@ async function getModuleRunner(root: string) {
   );
 }
 
-parentEvent.addListener(async event => {
+parentEventReceiver.addListener(async event => {
   if (event.type === 'initialize') {
     const { root, entrypoint } = event.data;
     const moduleRunner = await getModuleRunner(root);

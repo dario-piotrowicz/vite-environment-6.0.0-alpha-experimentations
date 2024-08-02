@@ -2,6 +2,8 @@ import {
   DevEnvironment as ViteDevEnvironment,
   RemoteEnvironmentTransport,
   BuildEnvironment,
+  type HotChannel,
+  type HotPayload,
   type ResolvedConfig,
   type Plugin,
 } from 'vite';
@@ -9,9 +11,11 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import {
   createEventSender,
-  createEventProcessor,
+  createEventReceiver,
   type ChildEvent,
   type ParentEvent,
+  type EventSender,
+  type EventReceiver,
 } from './events';
 
 const runtimeName = 'node:process';
@@ -75,11 +79,13 @@ async function createNodeProcessDevEnvironment(
   const sendParentEvent = createEventSender<ParentEvent>(event => {
     childProcess.stdin.write(event);
   });
-  const childEvent = createEventProcessor<ChildEvent>(
+  const childEventReceiver = createEventReceiver<ChildEvent>(
     listen => {
       childProcess.stdout.on('data', listen);
     },
-    input => console.log(input),
+    input => {
+      console.log(input);
+    },
   );
 
   const devEnv = new ViteDevEnvironment(name, config, {
@@ -89,7 +95,7 @@ async function createNodeProcessDevEnvironment(
           sendParentEvent('transport', data);
         },
         onMessage: listener => {
-          childEvent.addListener(event => {
+          childEventReceiver.addListener(event => {
             if (event.type === 'transport') {
               listener(event.data);
             }
@@ -97,15 +103,7 @@ async function createNodeProcessDevEnvironment(
         },
       }),
     },
-    hot: {
-      send: data => {
-        sendParentEvent('hmr', data);
-      },
-      on: () => {},
-      off: () => {},
-      listen: () => {},
-      close: () => {},
-    },
+    hot: createSimpleHotChannel(sendParentEvent, childEventReceiver),
   }) as DevEnvironment;
 
   let port: number;
@@ -116,12 +114,12 @@ async function createNodeProcessDevEnvironment(
         port = await new Promise(resolve => {
           function initializedListener(event: { type: ChildEvent; data: any }) {
             if (event.type === 'initialized') {
-              childEvent.removeListener(initializedListener);
+              childEventReceiver.removeListener(initializedListener);
               resolve(event.data.port);
             }
           }
 
-          childEvent.addListener(initializedListener);
+          childEventReceiver.addListener(initializedListener);
           sendParentEvent('initialize', { root: config.root, entrypoint });
         });
       }
@@ -137,6 +135,67 @@ async function createNodeProcessDevEnvironment(
   };
 
   return devEnv;
+}
+
+function createSimpleHotChannel(
+  sendEvent: EventSender<ParentEvent>,
+  eventReceiver: EventReceiver<ChildEvent>,
+): HotChannel {
+  const listenersMap = new Map<string, Set<Function>>();
+  let hotDispose: () => void;
+
+  return {
+    send(...args) {
+      let payload: HotPayload;
+
+      if (typeof args[0] === 'string') {
+        payload = {
+          type: 'custom',
+          event: args[0],
+          data: args[1],
+        };
+      } else {
+        payload = args[0];
+      }
+
+      sendEvent('hmr', payload);
+    },
+    on(event, listener) {
+      if (!listenersMap.get(event)) {
+        listenersMap.set(event, new Set());
+      }
+
+      listenersMap.get(event).add(listener);
+    },
+    off(event, listener) {
+      listenersMap.get(event)?.delete(listener);
+    },
+    listen() {
+      function eventListener(event: { type: ChildEvent; data: any }) {
+        const payload = event.data;
+
+        if (event.type === 'hmr') {
+          if (!listenersMap.get(payload.event)) {
+            listenersMap.set(payload.event, new Set());
+          }
+
+          for (const fn of listenersMap.get(payload.event)) {
+            fn(payload.data);
+          }
+        }
+      }
+
+      eventReceiver.addListener(eventListener);
+
+      hotDispose = () => {
+        eventReceiver.removeListener(eventListener);
+      };
+    },
+    close() {
+      hotDispose?.();
+      hotDispose = undefined;
+    },
+  };
 }
 
 type EnvironmentMetadata = {
