@@ -8,9 +8,10 @@ import {
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import {
-  processNonEvent,
-  createParentEvent,
-  processChildEvent,
+  createEventSender,
+  createEventProcessor,
+  type ChildEvent,
+  type ParentEvent,
 } from './events';
 
 const runtimeName = 'node:process';
@@ -71,31 +72,34 @@ async function createNodeProcessDevEnvironment(
   );
   const childProcess = spawn('node', [childProcessPath]);
 
-  // forward console output from child process
-  childProcess.stdout.on('data', data => {
-    processNonEvent(data, input => console.log(input));
+  const sendParentEvent = createEventSender<ParentEvent>(event => {
+    childProcess.stdin.write(event);
   });
+  const childEvent = createEventProcessor<ChildEvent>(
+    listen => {
+      childProcess.stdout.on('data', listen);
+    },
+    input => console.log(input),
+  );
 
   const devEnv = new ViteDevEnvironment(name, config, {
     runner: {
       transport: new RemoteEnvironmentTransport({
         send: data => {
-          childProcess.stdin.write(createParentEvent('transport', data));
+          sendParentEvent('transport', data);
         },
         onMessage: listener => {
-          childProcess.stdout.on('data', data => {
-            processChildEvent(data, event => {
-              if (event.type === 'transport') {
-                listener(event.data);
-              }
-            });
+          childEvent.addListener(event => {
+            if (event.type === 'transport') {
+              listener(event.data);
+            }
           });
         },
       }),
     },
     hot: {
       send: data => {
-        childProcess.stdin.write(createParentEvent('hmr', data));
+        sendParentEvent('hmr', data);
       },
       on: () => {},
       off: () => {},
@@ -110,19 +114,15 @@ async function createNodeProcessDevEnvironment(
     async getHandler({ entrypoint }) {
       if (!port) {
         port = await new Promise(resolve => {
-          function initializedListener(data: any) {
-            processChildEvent(data, event => {
-              if (event.type === 'initialized') {
-                childProcess.stdout.removeListener('data', initializedListener);
-                resolve(event.data.port);
-              }
-            });
+          function initializedListener(event: { type: ChildEvent; data: any }) {
+            if (event.type === 'initialized') {
+              childEvent.removeListener(initializedListener);
+              resolve(event.data.port);
+            }
           }
 
-          childProcess.stdout.on('data', initializedListener);
-          childProcess.stdin.write(
-            createParentEvent('initialize', { root: config.root, entrypoint }),
-          );
+          childEvent.addListener(initializedListener);
+          sendParentEvent('initialize', { root: config.root, entrypoint });
         });
       }
 

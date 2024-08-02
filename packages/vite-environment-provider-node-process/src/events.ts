@@ -1,42 +1,46 @@
 const PREFIX = '__PRIVATE__';
 
-type ParentEvent = 'initialize' | 'hmr' | 'transport';
-type ChildEvent = 'initialized' | 'transport';
+export type ParentEvent = 'initialize' | 'hmr' | 'transport';
+export type ChildEvent = 'initialized' | 'transport';
 
-function createEventCreator<T extends string>() {
-  return (type: T, data?: any) => {
-    return `${PREFIX}${JSON.stringify({ type, data })}`;
-  };
-}
-
-function createEventProcessor<T extends string>() {
-  return (
-    buffer: Buffer,
-    callback: (event: { type: T; data: any }) => void,
-  ) => {
-    const input = buffer.toString();
-
-    if (input.startsWith(PREFIX)) {
-      callback(JSON.parse(input.substring(PREFIX.length)));
-    }
-  };
-}
-
-export function processNonEvent(
-  buffer: Buffer,
-  callback: (input: string) => void,
+export function createEventSender<T extends string>(
+  send: (event: string) => void,
 ) {
-  const input = buffer.toString();
-
-  if (!input.startsWith(PREFIX)) {
-    callback(input);
-  }
+  return (type: T, data?: any) => {
+    send(`${PREFIX}${JSON.stringify({ type, data })}`);
+  };
 }
 
-// parent events
-export const createParentEvent = createEventCreator<ParentEvent>();
-export const processParentEvent = createEventProcessor<ParentEvent>();
+type Listener<T> = (event: { type: T; data: any }) => void;
 
-// child events
-export const createChildEvent = createEventCreator<ChildEvent>();
-export const processChildEvent = createEventProcessor<ChildEvent>();
+export function createEventProcessor<T extends string>(
+  initRootListener: (listen: (data: Buffer) => void) => void,
+  nonEventListener?: (input: string) => void,
+) {
+  const listeners = new Set<Listener<T>>();
+
+  initRootListener(data => {
+    let buffer = '';
+    buffer += data;
+    let lines = buffer.split('\n');
+
+    lines.forEach(line => {
+      if (line.startsWith(PREFIX)) {
+        listeners.forEach(listener =>
+          listener(JSON.parse(line.substring(PREFIX.length))),
+        );
+      } else {
+        nonEventListener?.(line);
+      }
+    });
+  });
+
+  return {
+    addListener(listener: Listener<T>) {
+      listeners.add(listener);
+    },
+    removeListener(listener: Listener<T>) {
+      listeners.delete(listener);
+    },
+  };
+}

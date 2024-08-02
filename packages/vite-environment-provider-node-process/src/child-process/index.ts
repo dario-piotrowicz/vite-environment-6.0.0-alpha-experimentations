@@ -6,7 +6,19 @@ import {
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import getPort from 'get-port';
-import { processParentEvent, createChildEvent } from '../events';
+import {
+  createEventSender,
+  createEventProcessor,
+  type ChildEvent,
+  type ParentEvent,
+} from '../events';
+
+const sendChildEvent = createEventSender<ChildEvent>(event => {
+  process.stdout.write(event);
+});
+const parentEvent = createEventProcessor<ParentEvent>(listen => {
+  process.stdin.on('data', listen);
+});
 
 async function getModuleRunner(root: string) {
   return new ModuleRunner(
@@ -14,15 +26,13 @@ async function getModuleRunner(root: string) {
       root,
       transport: new RemoteRunnerTransport({
         send: data => {
-          process.stdout.write(createChildEvent('transport', data));
+          sendChildEvent('transport', data);
         },
         onMessage: listener => {
-          process.stdin.on('data', data => {
-            processParentEvent(data, event => {
-              if (event.type === 'transport') {
-                listener(event.data);
-              }
-            });
+          parentEvent.addListener(event => {
+            if (event.type === 'transport') {
+              listener(event.data);
+            }
           });
         },
       }),
@@ -30,12 +40,10 @@ async function getModuleRunner(root: string) {
         connection: {
           isReady: () => true,
           onUpdate: callback => {
-            process.stdin.on('data', data => {
-              processParentEvent(data, event => {
-                if (event.type === 'hmr') {
-                  callback(event.data);
-                }
-              });
+            parentEvent.addListener(event => {
+              if (event.type === 'hmr') {
+                callback(event.data);
+              }
             });
           },
           send: () => {},
@@ -46,21 +54,19 @@ async function getModuleRunner(root: string) {
   );
 }
 
-process.stdin.on('data', async data => {
-  processParentEvent(data, async event => {
-    if (event.type === 'initialize') {
-      const { root, entrypoint } = event.data;
-      const moduleRunner = await getModuleRunner(root);
-      const entry = await moduleRunner.import(entrypoint);
-      const app = new Hono();
+parentEvent.addListener(async event => {
+  if (event.type === 'initialize') {
+    const { root, entrypoint } = event.data;
+    const moduleRunner = await getModuleRunner(root);
+    const entry = await moduleRunner.import(entrypoint);
+    const app = new Hono();
 
-      app.all('*', c => {
-        return entry.default(c.req.raw);
-      });
+    app.all('*', c => {
+      return entry.default(c.req.raw);
+    });
 
-      serve({ fetch: app.fetch, port: await getPort() }, ({ port }) => {
-        process.stdout.write(createChildEvent('initialized', { port }));
-      });
-    }
-  });
+    serve({ fetch: app.fetch, port: await getPort() }, ({ port }) => {
+      sendChildEvent('initialized', { port });
+    });
+  }
 });
