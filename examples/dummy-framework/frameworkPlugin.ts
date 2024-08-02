@@ -27,7 +27,6 @@ export function dummyFramework({
     ...environmentPlugin,
     {
       name: 'example-framework-plugin',
-
       async configureServer(server: ViteDevServer) {
         const devEnv = server.environments[ssrEnvName] as
           | undefined
@@ -42,6 +41,14 @@ export function dummyFramework({
         } else {
           throw new Error('No ssr environment was detected');
         }
+
+        devEnv.hot.send('plugin-event', 'Hello from framework plugin');
+
+        devEnv.hot.on('ssr-event', data => {
+          console.log(
+            `Received custom event (import.meta.hot.send is working). Payload value is '${data}'.`,
+          );
+        });
 
         return async () => {
           server.middlewares.use(
