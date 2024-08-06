@@ -190,7 +190,7 @@ async function createWorkerdDevEnvironment(
 
       // TODO: instead of `raw` use `rawSpecifier`, as soon as that is updated in workerd
       // (https://github.com/cloudflare/workerd/pull/2186)
-      const rawSpecifier = url.searchParams.get('raw');
+      const rawSpecifier = url.searchParams.get('rawSpecifier');
 
       const referrer = url.searchParams.get('referrer');
 
