@@ -1,23 +1,24 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, relative, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  type HotChannel,
-  type HotPayload,
-  type ResolvedConfig,
-  type Plugin,
+  HotUpdateContext,
 } from 'vite';
 
-import {
-  Miniflare,
-  Response as MiniflareResponse,
-  type MessageEvent,
-  type TypedEventListener,
-  type WebSocket,
-} from 'miniflare';
+import { HotChannel, HotPayload, ResolvedConfig, Plugin } from 'vite';
 
-import { fileURLToPath } from 'node:url';
-import { dirname, relative } from 'node:path';
-import { readFile } from 'fs/promises';
+import {
+  SourcelessWorkerOptions,
+  unstable_getMiniflareWorkerOptions,
+} from 'wrangler';
+
+import { Miniflare, Response as MiniflareResponse } from 'miniflare';
+
+import type { MessageEvent, WebSocket } from 'miniflare';
+
 import * as debugDumps from './debug-dumps';
 import { adjustCodeForWorkerd } from './codeTransformation';
 
@@ -77,32 +78,41 @@ function deepMergeOptions(
   };
 }
 
+const defaultWranglerConfig = 'wrangler.toml';
+
 export function workerdEnvironment(
   environmentName: string,
   options: WorkerdEnvironmentOptions = {},
 ): Plugin[] {
+  const resolvedWranglerConfigPath = resolve(
+    options.config ?? defaultWranglerConfig,
+  );
+  options.config = resolvedWranglerConfigPath;
+
   return [
     {
       name: 'workerd-environment-plugin',
 
       async config() {
-        // we're not really reading the configuration, the following console.log
-        // just exemplifies such workflow
-        console.log(
-          `(pretend that we're...) reading configuration from ${options.config}...`,
-        );
-
         return {
           environments: {
-            [environmentName]: createWorkerdEnvironment(),
+            [environmentName]: createWorkerdEnvironment(options),
           },
         };
+      },
+      hotUpdate(ctx: HotUpdateContext) {
+        if (ctx.environment.name !== environmentName) {
+          return;
+        }
+        if (ctx.file === resolvedWranglerConfigPath) {
+          ctx.server.restart();
+        }
       },
     },
   ];
 }
 
-export function createWorkerdEnvironment() {
+export function createWorkerdEnvironment(options: WorkerdEnvironmentOptions) {
   return {
     metadata: { runtimeName },
     dev: {
@@ -110,7 +120,7 @@ export function createWorkerdEnvironment() {
         name: string,
         config: ResolvedConfig,
       ): Promise<DevEnvironment> {
-        return createWorkerdDevEnvironment(name, config);
+        return createWorkerdDevEnvironment(name, config, options);
       },
     },
     build: {
@@ -118,7 +128,7 @@ export function createWorkerdEnvironment() {
         name: string,
         config: ResolvedConfig,
       ): Promise<BuildEnvironment> {
-        return createWorkerdBuildEnvironment(name, config);
+        return createWorkerdBuildEnvironment(name, config, options);
       },
     },
   };
@@ -127,6 +137,7 @@ export function createWorkerdEnvironment() {
 async function createWorkerdBuildEnvironment(
   name: string,
   config: ResolvedConfig,
+  _workerdOptions: WorkerdEnvironmentOptions,
 ): Promise<BuildEnvironment> {
   const buildEnv = new BuildEnvironment(name, config);
   // Nothing too special to do here, the default build env is probably ok for now
@@ -136,7 +147,11 @@ async function createWorkerdBuildEnvironment(
 async function createWorkerdDevEnvironment(
   name: string,
   config: ResolvedConfig,
+  workerdOptions: WorkerdEnvironmentOptions,
 ): Promise<DevEnvironment> {
+  const { bindings: bindingsFromToml, ...optionsFromToml } =
+    getOptionsFromWranglerConfig(workerdOptions.config!);
+
   const mf = new Miniflare({
     modulesRoot: fileURLToPath(new URL('./', import.meta.url)),
     modules: [
@@ -154,11 +169,8 @@ async function createWorkerdDevEnvironment(
       },
     ],
     unsafeEvalBinding: 'UNSAFE_EVAL',
-    compatibilityDate: '2024-02-08',
-    compatibilityFlags: ['nodejs_compat'],
-    // TODO: we should read this from a toml file and not hardcode it
-    kvNamespaces: ['MY_KV'],
     bindings: {
+      ...bindingsFromToml,
       ROOT: config.root,
     },
     serviceBindings: {
@@ -291,6 +303,7 @@ async function createWorkerdDevEnvironment(
         );
       } catch {}
     },
+    ...optionsFromToml,
   });
 
   const resp = await mf.dispatchFetch('http:0.0.0.0/__init-module-runner', {
@@ -406,6 +419,41 @@ function createHotChannel(webSocket: WebSocket): HotChannel {
       hotDispose?.();
       hotDispose = undefined;
     },
+  };
+}
+
+function getOptionsFromWranglerConfig(configPath: string) {
+  let configOptions: SourcelessWorkerOptions;
+  try {
+    const { workerOptions } = unstable_getMiniflareWorkerOptions(configPath);
+    configOptions = workerOptions;
+  } catch (e) {
+    console.warn(`WARNING: unable to read config file at "${configPath}"`);
+    return {};
+  }
+
+  const {
+    bindings,
+    textBlobBindings,
+    dataBlobBindings,
+    wasmBindings,
+    kvNamespaces,
+    r2Buckets,
+    d1Databases,
+    compatibilityDate,
+    compatibilityFlags,
+  } = configOptions;
+
+  return {
+    bindings,
+    textBlobBindings,
+    dataBlobBindings,
+    wasmBindings,
+    kvNamespaces,
+    r2Buckets,
+    d1Databases,
+    compatibilityDate,
+    compatibilityFlags,
   };
 }
 
