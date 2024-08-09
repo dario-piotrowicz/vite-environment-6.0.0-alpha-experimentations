@@ -1,12 +1,14 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, relative, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  type HotChannel,
-  type HotPayload,
-  type ResolvedConfig,
-  type Plugin,
   HotUpdateContext,
 } from 'vite';
+
+import { HotChannel, HotPayload, ResolvedConfig, Plugin } from 'vite';
 
 import {
   SourcelessWorkerOptions,
@@ -20,9 +22,6 @@ import {
   type WebSocket,
 } from 'miniflare';
 
-import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve } from 'node:path';
-import { readFile } from 'fs/promises';
 import * as debugDumps from './debug-dumps';
 import { collectModuleInfo } from './moduleUtils';
 
