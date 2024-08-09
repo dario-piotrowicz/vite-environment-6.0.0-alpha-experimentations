@@ -5,6 +5,7 @@ import {
   type HotPayload,
   type ResolvedConfig,
   type Plugin,
+  HotUpdateContext,
 } from 'vite';
 
 import {
@@ -20,7 +21,7 @@ import {
 } from 'miniflare';
 
 import { fileURLToPath } from 'node:url';
-import { dirname, relative } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { readFile } from 'fs/promises';
 import * as debugDumps from './debug-dumps';
 import { collectModuleInfo } from './moduleUtils';
@@ -81,10 +82,17 @@ function deepMergeOptions(
   };
 }
 
+const defaultWranglerConfig = 'wrangler.toml';
+
 export function workerdEnvironment(
   environmentName: string,
   options: WorkerdEnvironmentOptions = {},
 ): Plugin[] {
+  const resolvedWranglerConfigPath = resolve(
+    options.config ?? defaultWranglerConfig,
+  );
+  options.config = resolvedWranglerConfigPath;
+
   return [
     {
       name: 'workerd-environment-plugin',
@@ -95,6 +103,14 @@ export function workerdEnvironment(
             [environmentName]: createWorkerdEnvironment(options),
           },
         };
+      },
+      hotUpdate(ctx: HotUpdateContext) {
+        if (ctx.environment.name !== environmentName) {
+          return;
+        }
+        if (ctx.file === resolvedWranglerConfigPath) {
+          ctx.server.restart();
+        }
       },
     },
   ];
