@@ -1,29 +1,24 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, relative, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+
 import {
   DevEnvironment as ViteDevEnvironment,
   BuildEnvironment,
-  type HotChannel,
-  type HotPayload,
-  type ResolvedConfig,
-  type Plugin,
   HotUpdateContext,
 } from 'vite';
+
+import { HotChannel, HotPayload, ResolvedConfig, Plugin } from 'vite';
 
 import {
   SourcelessWorkerOptions,
   unstable_getMiniflareWorkerOptions,
 } from 'wrangler';
 
-import {
-  Miniflare,
-  Response as MiniflareResponse,
-  type MessageEvent,
-  type TypedEventListener,
-  type WebSocket,
-} from 'miniflare';
+import { Miniflare, Response as MiniflareResponse } from 'miniflare';
 
-import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve } from 'node:path';
-import { readFile } from 'fs/promises';
+import type { MessageEvent, WebSocket } from 'miniflare';
+
 import * as debugDumps from './debug-dumps';
 import { adjustCodeForWorkerd } from './codeTransformation';
 
