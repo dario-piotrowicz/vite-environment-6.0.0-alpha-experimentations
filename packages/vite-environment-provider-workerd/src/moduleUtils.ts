@@ -15,9 +15,9 @@ export async function collectModuleInfo(
   const namedExportsSet = new Set<string>();
 
   const cjsLexerResult = parse(moduleCode);
-  cjsLexerResult.exports.forEach(namedExport =>
-    namedExportsSet.add(namedExport),
-  );
+  for (const namedExport of cjsLexerResult.exports) {
+    namedExportsSet.add(namedExport)
+  }
   for (const reExport of cjsLexerResult.reexports) {
     const reExportsPath = resolve(dirname(moduleFilePath), reExport);
 
