@@ -205,7 +205,6 @@ async function createWorkerdDevEnvironment(
 
       fixedSpecifier = rawSpecifier;
 
-      let result: { code: string } | undefined;
       try {
         let { id } = await devEnv.pluginContainer.resolveId(
           fixedSpecifier,
@@ -227,15 +226,6 @@ async function createWorkerdDevEnvironment(
         const redirectTo =
           id !== rawSpecifier && id !== specifier ? id : undefined;
 
-        let code: string | undefined;
-        if (!redirectTo) {
-          // and we read the code from the resolved file
-          code = await readFile(id, 'utf8');
-          if (code) {
-            result = { code };
-          }
-        }
-
         if (redirectTo) {
           return new MiniflareResponse(null, {
             headers: { location: id },
@@ -243,18 +233,14 @@ async function createWorkerdDevEnvironment(
           });
         }
 
-        const notFound = !result;
+        // and we read the code from the resolved file
+        const code: string | null = await readFile(id, 'utf8').catch(
+          () => null,
+        );
 
-        const moduleInfo = await collectModuleInfo(result.code, id);
+        const notFound = !code;
 
-        const mod = moduleInfo.isCommonJS
-          ? {
-              commonJsModule: result.code,
-              namedExports: moduleInfo.namedExports,
-            }
-          : {
-              esModule: result.code,
-            };
+        const moduleInfo = await collectModuleInfo(code, id);
 
         debugDumps.dumpModuleFallbackServiceLog({
           resolveMethod,
@@ -272,6 +258,15 @@ async function createWorkerdDevEnvironment(
         if (notFound) {
           return new MiniflareResponse(null, { status: 404 });
         }
+
+        const mod = moduleInfo.isCommonJS
+          ? {
+              commonJsModule: code,
+              namedExports: moduleInfo.namedExports,
+            }
+          : {
+              esModule: code,
+            };
 
         return new MiniflareResponse(
           JSON.stringify({
