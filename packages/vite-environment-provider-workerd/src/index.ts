@@ -11,7 +11,6 @@ import {
   Miniflare,
   Response as MiniflareResponse,
   type MessageEvent,
-  type TypedEventListener,
   type WebSocket,
 } from 'miniflare';
 
@@ -19,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, relative } from 'node:path';
 import { readFile } from 'fs/promises';
 import * as debugDumps from './debug-dumps';
-import { adjustCodeForWorkerd } from './codeTransformation';
+import { collectModuleInfo } from './moduleUtils';
 
 export type DevEnvironment = ViteDevEnvironment & {
   metadata: EnvironmentMetadata;
@@ -188,9 +187,7 @@ async function createWorkerdDevEnvironment(
         throw new Error('no specifier provided');
       }
 
-      // TODO: instead of `raw` use `rawSpecifier`, as soon as that is updated in workerd
-      // (https://github.com/cloudflare/workerd/pull/2186)
-      const rawSpecifier = url.searchParams.get('raw');
+      const rawSpecifier = url.searchParams.get('rawSpecifier');
 
       const referrer = url.searchParams.get('referrer');
 
@@ -208,7 +205,6 @@ async function createWorkerdDevEnvironment(
 
       fixedSpecifier = rawSpecifier;
 
-      let result: { code: string } | undefined;
       try {
         let { id } = await devEnv.pluginContainer.resolveId(
           fixedSpecifier,
@@ -230,16 +226,6 @@ async function createWorkerdDevEnvironment(
         const redirectTo =
           id !== rawSpecifier && id !== specifier ? id : undefined;
 
-        let code: string | undefined;
-        if (!redirectTo) {
-          // and we read the code from the resolved file
-          code = await readFile(id, 'utf8');
-          if (code) {
-            code = adjustCodeForWorkerd(code);
-            result = { code };
-          }
-        }
-
         if (redirectTo) {
           return new MiniflareResponse(null, {
             headers: { location: id },
@@ -247,24 +233,14 @@ async function createWorkerdDevEnvironment(
           });
         }
 
-        const notFound = !result;
+        // and we read the code from the resolved file
+        const code: string | null = await readFile(id, 'utf8').catch(
+          () => null,
+        );
 
-        // TODO: here we use some very very silly/brittle string checks to see if the loaded
-        //       module is cjs, this 1000% should be improved, could Vite itself help us out here?
-        //       (could `devEnv.pluginContainer.resolveId` itself tell us the module's type?)
-        const isCommonJS =
-          code &&
-          (code.includes('module.exports =') ||
-            code.includes('\nexports.') ||
-            code.includes('\nexports['));
+        const notFound = !code;
 
-        const mod = isCommonJS
-          ? {
-              commonJsModule: result.code,
-            }
-          : {
-              esModule: result.code,
-            };
+        const moduleInfo = await collectModuleInfo(code, id);
 
         debugDumps.dumpModuleFallbackServiceLog({
           resolveMethod,
@@ -275,13 +251,22 @@ async function createWorkerdDevEnvironment(
           resolvedId,
           redirectTo,
           code,
-          isCommonJS,
+          isCommonJS: moduleInfo.isCommonJS,
           notFound: notFound || undefined,
         });
 
         if (notFound) {
           return new MiniflareResponse(null, { status: 404 });
         }
+
+        const mod = moduleInfo.isCommonJS
+          ? {
+              commonJsModule: code,
+              namedExports: moduleInfo.namedExports,
+            }
+          : {
+              esModule: code,
+            };
 
         return new MiniflareResponse(
           JSON.stringify({
