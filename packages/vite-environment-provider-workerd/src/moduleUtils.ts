@@ -38,7 +38,7 @@ export async function collectModuleInfo(
     }
   }
 
-  const namedExports = [...namedExportsSet.values()];
+  const namedExports = [...namedExportsSet];
 
   return {
     isCommonJS: true,
