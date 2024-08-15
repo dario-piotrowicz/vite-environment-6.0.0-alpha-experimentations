@@ -32,9 +32,9 @@ export async function collectModuleInfo(
     const reExportsInfo = await collectModuleInfo(reExportsCode, reExportsPath);
 
     if (reExportsInfo.isCommonJS) {
-      reExportsInfo.namedExports.forEach(namedExport =>
-        namedExportsSet.add(namedExport),
-      );
+      for (const namedExport of reExportsInfo.namedExports) {
+        namedExportsSet.add(namedExport);
+      }
     }
   }
 
