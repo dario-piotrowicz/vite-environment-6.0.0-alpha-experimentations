@@ -63,7 +63,7 @@ src
 
 ### The module fallback service
 
-In the `index.ts` code you can see a `unsafeModuleFallbackService` this is a relatively new feature of workerd+miniflare that is instrumental here to enable the module runner's `runExternalModule` method to function in workerd.
+In the `index.ts` code you can see a `unsafeModuleFallbackService` this is a relatively new feature of workerd and miniflare that is instrumental here to enable the module runner's `runExternalModule` method to function in workerd.
 
 How this works is that when workerd tries to import a module and it can't find it in its module graph then it sends a request to the module fallback service providing the import details.
 
