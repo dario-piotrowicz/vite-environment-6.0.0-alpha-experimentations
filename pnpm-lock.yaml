@@ -24,7 +24,7 @@ importers:
         specifier: ^12.4.0
         version: 12.4.0(typescript@5.4.5)
 
-  examples/dummy-framework:
+  examples/example-framework:
     dependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20240424.0
