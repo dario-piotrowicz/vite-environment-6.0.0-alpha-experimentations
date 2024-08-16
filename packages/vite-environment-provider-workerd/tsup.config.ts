@@ -37,7 +37,6 @@ const buildPluginConfig = defineConfig({
     'esbuild',
     'vite',
   ],
-  noExternal: ['recast/parsers/babel', '@babel/parser'],
 });
 
 export default [

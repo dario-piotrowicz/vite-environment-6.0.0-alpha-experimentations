@@ -10,14 +10,15 @@
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
+    "@dario-hacking/vite-6-alpha-environment-provider-node-process": "workspace:*",
+    "@dario-hacking/vite-6-alpha-environment-provider-node-vm": "workspace:*",
+    "@dario-hacking/vite-6-alpha-environment-provider-workerd": "workspace:*",
     "miniflare": "^3.20240129.3",
     "vite": "^6.0.0-alpha.18",
-    "@dario-hacking/vite-6-alpha-environment-provider-workerd": "workspace:*",
-    "@dario-hacking/vite-6-alpha-environment-provider-node-process": "workspace:*",
-    "@dario-hacking/vite-6-alpha-environment-provider-node-vm": "workspace:*"
+    "wrangler": "^3.57.2"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20240222.0",
-    "typescript": "^5.3.3"
+    "@cloudflare/workers-types": "^4.20240424.0",
+    "typescript": "^5.1.6"
   }
 }

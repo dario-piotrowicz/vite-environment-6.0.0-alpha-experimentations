@@ -7,7 +7,8 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "syncpack": "^12.4.0"
   },
   "pnpm": {
     "overrides": {

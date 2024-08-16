@@ -17,9 +17,10 @@
   ],
   "devDependencies": {
     "@types/node": "^20.11.19",
-    "esbuild": "^0.15.3",
     "tsup": "^8.0.2",
-    "vite": "^6.0.0-alpha.18",
-    "typescript": "^5.0.4"
+    "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "vite": "^6.0.0-alpha.18"
   }
 }
