@@ -15,16 +15,17 @@
   "files": [
     "dist"
   ],
-  "devDependencies": {
-    "@types/node": "^20.11.19",
-    "esbuild": "^0.15.3",
-    "tsup": "^8.0.2",
-    "typescript": "^5.0.4",
-    "vite": "^6.0.0-alpha.18"
-  },
   "dependencies": {
     "@hono/node-server": "^1.12.0",
     "get-port": "^7.1.0",
     "hono": "^4.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "tsup": "^8.0.2",
+    "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "vite": "^6.0.0-alpha.18"
   }
 }

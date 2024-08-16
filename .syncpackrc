@@ -1,0 +1,21 @@
+{
+  "versionGroups": [
+    {
+      "label": "Ignore @remix-run/dev",
+      "dependencies": [
+        "@remix-run/dev"
+      ],
+      "isIgnored": true
+    },
+    {
+      "label": "Use workspace protocol when developing local packages",
+      "dependencies": [
+        "$LOCAL"
+      ],
+      "dependencyTypes": [
+        "dev"
+      ],
+      "pinVersion": "workspace:*"
+    }
+  ]
+}

@@ -5,9 +5,11 @@ Experimentations based on the [_experimental_ Vite Environment API](https://depl
 ## Setup
 
 Simply run:
+
 ```
 $ pnpm i
 ```
+
 to install all the dependencies and build all the packages in this repository, there you can `cd` in any of the examples and run their development scripts.
 
 ## Monorepo Structure
@@ -25,6 +27,10 @@ to install all the dependencies and build all the packages in this repository, t
 
 > [!NOTE]
 > The most important example currently here is `remix-app-workerd` which uses `packages/vite-environment-provider-workerd` to server side render a Remix application in the workerd environment.
+
+## Syncpack
+
+[Syncpack](https://jamiemason.github.io/syncpack/) can be used to find and fix dependency version mismatches. The most useful commands are `pnpm syncpack list-mismatches` and `pnpm syncpack fix-mismatches`.
 
 ## Extra info
 
