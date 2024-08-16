@@ -21,7 +21,7 @@ for (const packageName of packagesToPublish) {
                 await writeFile(packageJsonPath, updatedPackageJson);
 
                 await execCommand('git add .');
-                await execCommand(`git commit -m "bump my-package to \"0.0.${newPatch}\""`);
+                await execCommand(`git commit -m "bump ${packageName} to \"0.0.${newPatch}\""`);
                 commitCreated = true;
 
                 const packageNameToPublish = `@dario-hacking/${packageName.replace('vite-environment-provider', 'vite-6-alpha-environment-provider')}`;
