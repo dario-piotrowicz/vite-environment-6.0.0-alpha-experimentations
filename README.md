@@ -30,7 +30,7 @@ to install all the dependencies and build all the packages in this repository, t
 
 ## Syncpack
 
-[Syncpack](https://jamiemason.github.io/syncpack/) can be used to find and fix dependency version mismatches. The most useful commands are `pnpm list-mismatches` and `pnpm fix-mismatches`.
+[Syncpack](https://jamiemason.github.io/syncpack/) can be used to find and fix dependency version mismatches. The most useful commands are `pnpm syncpack list-mismatches` and `pnpm syncpack fix-mismatches`.
 
 ## Extra info
 
