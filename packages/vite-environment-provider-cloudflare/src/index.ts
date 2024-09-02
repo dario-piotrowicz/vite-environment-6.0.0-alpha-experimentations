@@ -50,11 +50,11 @@ export type EnvironmentMetadata = {
 };
 
 export function cloudflare(
-  userOptions: CloudflareEnvironmentOptions,
+  userOptions: CloudflareEnvironmentOptions = {},
 ): typeof cloudflareEnvironment {
   return (
     environmentName: string,
-    pluginConsumerOptions: CloudflareEnvironmentOptions,
+    pluginConsumerOptions: CloudflareEnvironmentOptions = {},
   ) => {
     // we deep merge the options from the caller into the user options here, we do this so
     // that consumers of this plugin are able to override/augment/tweak the options if need be
