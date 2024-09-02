@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240424.0",
-    "@dario-hacking/vite-6-alpha-environment-provider-workerd": "workspace:*",
+    "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
     "@remix-run/dev": "2.9.1",
     "@remix-run/server-runtime": "2.8.0",
     "@types/react": "^18.2.20",

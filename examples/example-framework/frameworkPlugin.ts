@@ -2,10 +2,10 @@ import type { ViteDevServer, Plugin } from 'vite';
 import {
   workerdEnvironment,
   type DevEnvironment,
-} from '@dario-hacking/vite-6-alpha-environment-provider-workerd';
-import { nodeProcessEnvironment } from '@dario-hacking/vite-6-alpha-environment-provider-node-process';
+} from '@flarelabs-net/vite-environment-provider-cloudflare';
+import { nodeProcessEnvironment } from '@flarelabs-net/vite-environment-provider-node-process';
+import { nodeVMEnvironment } from '@flarelabs-net/vite-environment-provider-node-vm';
 import type * as http from 'node:http';
-import { nodeVMEnvironment } from '@dario-hacking/vite-6-alpha-environment-provider-node-vm';
 
 const ssrEnvName = 'ssr-env';
 

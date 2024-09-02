@@ -2,7 +2,7 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { workerd } from '@dario-hacking/vite-6-alpha-environment-provider-workerd';
+import { workerd } from '@flarelabs-net/vite-environment-provider-cloudflare';
 
 export default defineConfig({
   plugins: [

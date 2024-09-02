@@ -33,15 +33,15 @@ importers:
         specifier: ^5.1.6
         version: 5.4.5
     devDependencies:
-      '@dario-hacking/vite-6-alpha-environment-provider-node-process':
+      '@flarelabs-net/vite-environment-provider-cloudflare':
+        specifier: workspace:*
+        version: link:../../packages/vite-environment-provider-cloudflare
+      '@flarelabs-net/vite-environment-provider-node-process':
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-process
-      '@dario-hacking/vite-6-alpha-environment-provider-node-vm':
+      '@flarelabs-net/vite-environment-provider-node-vm':
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
-      '@dario-hacking/vite-6-alpha-environment-provider-workerd':
-        specifier: workspace:*
-        version: link:../../packages/vite-environment-provider-workerd
       miniflare:
         specifier: ^3.20240129.3
         version: 3.20240725.0
@@ -76,7 +76,7 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0
     devDependencies:
-      '@dario-hacking/vite-6-alpha-environment-provider-node-vm':
+      '@flarelabs-net/vite-environment-provider-node-vm':
         specifier: workspace:*
         version: link:../../packages/vite-environment-provider-node-vm
       '@remix-run/dev':
@@ -161,9 +161,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240424.0
         version: 4.20240815.0
-      '@dario-hacking/vite-6-alpha-environment-provider-workerd':
+      '@flarelabs-net/vite-environment-provider-cloudflare':
         specifier: workspace:*
-        version: link:../../packages/vite-environment-provider-workerd
+        version: link:../../packages/vite-environment-provider-cloudflare
       '@remix-run/dev':
         specifier: npm:@dario-hacking/remix-run-dev@2.9.1-vite-env-4
         version: '@dario-hacking/remix-run-dev@2.9.1-vite-env-4(@remix-run/react@2.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5))(@types/node@20.12.7)(miniflare@3.20240725.0)(typescript@5.4.5)(vite@6.0.0-alpha.18(patch_hash=mlojamv7ahaqbokpye3wuthwq4)(@types/node@20.12.7))(wrangler@3.57.2(@cloudflare/workers-types@4.20240815.0))'
@@ -222,6 +222,34 @@ importers:
         specifier: ^3.57.2
         version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
 
+  packages/vite-environment-provider-cloudflare:
+    dependencies:
+      cjs-module-lexer:
+        specifier: ^1.3.1
+        version: 1.3.1
+      miniflare:
+        specifier: ^3.20240129.3
+        version: 3.20240725.0
+      vite:
+        specifier: ^6.0.0-alpha.18
+        version: 6.0.0-alpha.18(patch_hash=mlojamv7ahaqbokpye3wuthwq4)(@types/node@20.12.7)
+      wrangler:
+        specifier: ^3.57.2
+        version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240424.0
+        version: 4.20240815.0
+      '@types/node':
+        specifier: ^20.11.19
+        version: 20.12.7
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(postcss@8.4.41)(typescript@5.4.5)
+      typescript:
+        specifier: ^5.1.6
+        version: 5.4.5
+
   packages/vite-environment-provider-node-process:
     dependencies:
       '@hono/node-server':
@@ -253,34 +281,6 @@ importers:
         specifier: ^6.0.0-alpha.18
         version: 6.0.0-alpha.18(patch_hash=mlojamv7ahaqbokpye3wuthwq4)(@types/node@20.12.7)
     devDependencies:
-      '@types/node':
-        specifier: ^20.11.19
-        version: 20.12.7
-      tsup:
-        specifier: ^8.0.2
-        version: 8.0.2(postcss@8.4.41)(typescript@5.4.5)
-      typescript:
-        specifier: ^5.1.6
-        version: 5.4.5
-
-  packages/vite-environment-provider-workerd:
-    dependencies:
-      cjs-module-lexer:
-        specifier: ^1.3.1
-        version: 1.3.1
-      miniflare:
-        specifier: ^3.20240129.3
-        version: 3.20240725.0
-      vite:
-        specifier: ^6.0.0-alpha.18
-        version: 6.0.0-alpha.18(patch_hash=mlojamv7ahaqbokpye3wuthwq4)(@types/node@20.12.7)
-      wrangler:
-        specifier: ^3.57.2
-        version: 3.57.2(@cloudflare/workers-types@4.20240815.0)
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240424.0
-        version: 4.20240815.0
       '@types/node':
         specifier: ^20.11.19
         version: 20.12.7
