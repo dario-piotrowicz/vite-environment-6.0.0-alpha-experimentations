@@ -1,4 +1,4 @@
-# Vite Environment 6.0.0 experimentations
+# Vite Environment Providers
 
 Experimentations based on the [_experimental_ Vite Environment API](https://deploy-preview-16471--vite-docs-main.netlify.app/guide/api-vite-environment.html) being worked on for `vite@6.0.0-alpha.x`
 
