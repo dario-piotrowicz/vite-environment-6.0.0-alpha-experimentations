@@ -2,7 +2,7 @@
   "name": "example-framework",
   "type": "module",
   "scripts": {
-    "dev:workerd": "vite_env='workerd' vite",
+    "dev:cloudflare": "vite_env='cloudflare' vite",
     "dev:node_process": "vite_env='node-process' vite",
     "dev:node_vm": "NODE_OPTIONS='--experimental-vm-modules' vite_env='node-vm' vite",
     "build": "vite build",
@@ -10,9 +10,9 @@
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {
-    "@dario-hacking/vite-6-alpha-environment-provider-node-process": "workspace:*",
-    "@dario-hacking/vite-6-alpha-environment-provider-node-vm": "workspace:*",
-    "@dario-hacking/vite-6-alpha-environment-provider-workerd": "workspace:*",
+    "@flarelabs-net/vite-environment-provider-node-process": "workspace:*",
+    "@flarelabs-net/vite-environment-provider-node-vm": "workspace:*",
+    "@flarelabs-net/vite-environment-provider-cloudflare": "workspace:*",
     "miniflare": "^3.20240129.3",
     "vite": "^6.0.0-alpha.18",
     "wrangler": "^3.57.2"

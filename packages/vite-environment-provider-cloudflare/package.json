@@ -1,10 +1,10 @@
 {
-  "name": "@dario-hacking/vite-6-alpha-environment-provider-workerd",
-  "version": "0.0.5",
+  "name": "@flarelabs-net/vite-environment-provider-cloudflare",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dario-piotrowicz/vite-environment-6.0.0-alpha-experimentations/",
-    "directory": "packages/vite-environment-provider-workerd"
+    "url": "https://github.com/flarelabs-net/vite-environment-providers/",
+    "directory": "packages/vite-environment-provider-cloudflare"
   },
   "main": "dist/index.js",
   "type": "module",

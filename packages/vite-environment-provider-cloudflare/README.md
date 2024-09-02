@@ -1,21 +1,21 @@
-# Vite Environment Provider Workerd
+# Vite Environment Provider Cloudflare
 
-Package that exports a `workerdEnvironmentProvider` function that can be used to set a Vite Environment to run code inside the [`workerd`](https://github.com/cloudflare/workerd) runtime (via [`Miniflare`](https://github.com/cloudflare/workers-sdk/tree/main/packages/miniflare)).
+Package that exports a `cloudflare` function that can be used to set a Vite Environment to run code inside the [`workerd`](https://github.com/cloudflare/workerd) runtime (via [`Miniflare`](https://github.com/cloudflare/workers-sdk/tree/main/packages/miniflare)).
 
 > [!NOTE]
 > Based on the [vite@6.0.0-alpha.18](https://www.npmjs.com/package/vite/v/6.0.0-alpha.18) Environment API implementation.
 
 ## Package Usage
 
-The package exposes the `workerdEnvironmentProvider` function that can be used to create new environments that run code inside the workerd runtime:
+The package exposes the `cloudflare` function that can be used to create new environments that run code inside the workerd runtime:
 
 ```ts
 environments: {
-  myEnvironment: workerdEnvironmentProvider(),
+  myEnvironment: cloudflare(),
 }
 ```
 
-this sets both a `dev` and a `build` environments (of course users can also process the `workerdEnvironmentProvider` returned value to tweak the returned environments and/or use only one of them).
+this sets both a `dev` and a `build` environments (of course users can also process the `cloudflare` returned value to tweak the returned environments and/or use only one of them).
 
 In the case of the dev environment, the environment instance is enhanced with an `api` field that contains a `getHandler` method, this is what can then be used to handle incoming requests (making sure that they are run inside workerd):
 
