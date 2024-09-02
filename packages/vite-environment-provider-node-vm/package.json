@@ -1,9 +1,9 @@
 {
-  "name": "@dario-hacking/vite-6-alpha-environment-provider-node-vm",
-  "version": "0.0.4",
+  "name": "@flarelabs-net/vite-environment-provider-node-vm",
+  "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dario-piotrowicz/vite-environment-6.0.0-alpha-experimentations/",
+    "url": "https://github.com/flarelabs-net/vite-environment-providers/",
     "directory": "packages/vite-environment-provider-node-vm"
   },
   "main": "dist/index.js",
