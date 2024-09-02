@@ -2,7 +2,7 @@
   "name": "example-framework",
   "type": "module",
   "scripts": {
-    "dev:workerd": "vite_env='workerd' vite",
+    "dev:cloudflare": "vite_env='cloudflare' vite",
     "dev:node_process": "vite_env='node-process' vite",
     "dev:node_vm": "NODE_OPTIONS='--experimental-vm-modules' vite_env='node-vm' vite",
     "build": "vite build",

@@ -1,6 +1,6 @@
 import type { ViteDevServer, Plugin } from 'vite';
 import {
-  workerdEnvironment,
+  cloudflareEnvironment,
   type DevEnvironment,
 } from '@flarelabs-net/vite-environment-provider-cloudflare';
 import { nodeProcessEnvironment } from '@flarelabs-net/vite-environment-provider-node-process';
@@ -14,11 +14,11 @@ export function dummyFramework({
   env,
 }: {
   entrypoint: string;
-  env: 'workerd' | 'node-process' | 'node-vm';
+  env: 'cloudflare' | 'node-process' | 'node-vm';
 }): Plugin[] {
   const environmentPlugin =
-    env === 'workerd'
-      ? workerdEnvironment(ssrEnvName)
+    env === 'cloudflare'
+      ? cloudflareEnvironment(ssrEnvName)
       : env === 'node-process'
         ? nodeProcessEnvironment(ssrEnvName)
         : nodeVMEnvironment(ssrEnvName);

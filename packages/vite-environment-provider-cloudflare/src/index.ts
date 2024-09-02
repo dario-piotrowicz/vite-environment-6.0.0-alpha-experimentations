@@ -36,7 +36,7 @@ export type DevEnvironment = ViteDevEnvironment & {
   };
 };
 
-export type WorkerdEnvironmentOptions = {
+export type CloudflareEnvironmentOptions = {
   config?: string;
 };
 
@@ -49,17 +49,17 @@ export type EnvironmentMetadata = {
   runtimeName: string;
 };
 
-export function workerd(
-  userOptions: WorkerdEnvironmentOptions,
-): typeof workerdEnvironment {
+export function cloudflare(
+  userOptions: CloudflareEnvironmentOptions,
+): typeof cloudflareEnvironment {
   return (
     environmentName: string,
-    pluginConsumerOptions: WorkerdEnvironmentOptions,
+    pluginConsumerOptions: CloudflareEnvironmentOptions,
   ) => {
     // we deep merge the options from the caller into the user options here, we do this so
     // that consumers of this plugin are able to override/augment/tweak the options if need be
     const pluginOptions = deepMergeOptions(userOptions, pluginConsumerOptions);
-    return workerdEnvironment(environmentName, pluginOptions);
+    return cloudflareEnvironment(environmentName, pluginOptions);
   };
 }
 
@@ -71,9 +71,9 @@ export function workerd(
  * @returns the target options object merged with the options from the source object
  */
 function deepMergeOptions(
-  target: WorkerdEnvironmentOptions,
-  source: WorkerdEnvironmentOptions,
-): WorkerdEnvironmentOptions {
+  target: CloudflareEnvironmentOptions,
+  source: CloudflareEnvironmentOptions,
+): CloudflareEnvironmentOptions {
   // the "deep merging" right now is very trivial... with a realistic/more complex
   // options structure we'd have to do a real deep merge here
   return {
@@ -83,9 +83,9 @@ function deepMergeOptions(
 
 const defaultWranglerConfig = 'wrangler.toml';
 
-export function workerdEnvironment(
+export function cloudflareEnvironment(
   environmentName: string,
-  options: WorkerdEnvironmentOptions = {},
+  options: CloudflareEnvironmentOptions = {},
 ): Plugin[] {
   const resolvedWranglerConfigPath = resolve(
     options.config ?? defaultWranglerConfig,
@@ -94,12 +94,12 @@ export function workerdEnvironment(
 
   return [
     {
-      name: 'workerd-environment-plugin',
+      name: 'vite-plugin-cloudflare-environment',
 
       async config() {
         return {
           environments: {
-            [environmentName]: createWorkerdEnvironment(options),
+            [environmentName]: createCloudflareEnvironment(options),
           },
         };
       },
@@ -115,7 +115,9 @@ export function workerdEnvironment(
   ];
 }
 
-export function createWorkerdEnvironment(options: WorkerdEnvironmentOptions) {
+export function createCloudflareEnvironment(
+  options: CloudflareEnvironmentOptions,
+) {
   return {
     metadata: { runtimeName },
     dev: {
@@ -123,7 +125,7 @@ export function createWorkerdEnvironment(options: WorkerdEnvironmentOptions) {
         name: string,
         config: ResolvedConfig,
       ): Promise<DevEnvironment> {
-        return createWorkerdDevEnvironment(name, config, options);
+        return createCloudflareDevEnvironment(name, config, options);
       },
     },
     build: {
@@ -131,29 +133,29 @@ export function createWorkerdEnvironment(options: WorkerdEnvironmentOptions) {
         name: string,
         config: ResolvedConfig,
       ): Promise<BuildEnvironment> {
-        return createWorkerdBuildEnvironment(name, config, options);
+        return createCloudflareBuildEnvironment(name, config, options);
       },
     },
   };
 }
 
-async function createWorkerdBuildEnvironment(
+async function createCloudflareBuildEnvironment(
   name: string,
   config: ResolvedConfig,
-  _workerdOptions: WorkerdEnvironmentOptions,
+  _cloudflareOptions: CloudflareEnvironmentOptions,
 ): Promise<BuildEnvironment> {
   const buildEnv = new BuildEnvironment(name, config);
   // Nothing too special to do here, the default build env is probably ok for now
   return buildEnv;
 }
 
-async function createWorkerdDevEnvironment(
+async function createCloudflareDevEnvironment(
   name: string,
   config: ResolvedConfig,
-  workerdOptions: WorkerdEnvironmentOptions,
+  cloudflareOptions: CloudflareEnvironmentOptions,
 ): Promise<DevEnvironment> {
   const { bindings: bindingsFromToml, ...optionsFromToml } =
-    getOptionsFromWranglerConfig(workerdOptions.config!);
+    getOptionsFromWranglerConfig(cloudflareOptions.config!);
 
   const mf = new Miniflare({
     modulesRoot: fileURLToPath(new URL('./', import.meta.url)),

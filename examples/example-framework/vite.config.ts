@@ -20,13 +20,13 @@ const config: UserConfig = {
   plugins: [
     dummyFramework({
       env:
-        process.env['vite_env'] === 'workerd'
-          ? 'workerd'
+        process.env['vite_env'] === 'cloudflare'
+          ? 'cloudflare'
           : process.env['vite_env'] === 'node-process'
             ? 'node-process'
             : 'node-vm',
       entrypoint:
-        process.env['vite_env'] === 'workerd'
+        process.env['vite_env'] === 'cloudflare'
           ? './entry-workerd.ts'
           : './entry-node.ts',
     }),

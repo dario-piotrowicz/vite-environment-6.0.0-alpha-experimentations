@@ -2,14 +2,14 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { workerd } from '@flarelabs-net/vite-environment-provider-cloudflare';
+import { cloudflare } from '@flarelabs-net/vite-environment-provider-cloudflare';
 
 export default defineConfig({
   plugins: [
     // @ts-ignore
     remix({
       // @ts-ignore
-      ssrEnvironment: workerd({
+      ssrEnvironment: cloudflare({
         config: 'config/wrangler.toml',
       }),
     }),

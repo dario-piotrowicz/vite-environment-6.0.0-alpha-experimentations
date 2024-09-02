@@ -1,5 +1,5 @@
 {
-  "name": "remix-app-workerd",
+  "name": "remix-app-cloudflare",
   "private": true,
   "sideEffects": false,
   "type": "module",

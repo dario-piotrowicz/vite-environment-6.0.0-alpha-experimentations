@@ -26,7 +26,7 @@ to install all the dependencies and build all the packages in this repository, t
 > All the packages and examples have their own README files explaining the package/example
 
 > [!NOTE]
-> The most important example currently here is `remix-app-workerd` which uses `packages/vite-environment-provider-workerd` to server side render a Remix application in the workerd environment.
+> The most important example currently here is `remix-app-cloudflare` which uses `packages/vite-environment-provider-cloudflare` to server side render a Remix application in the Cloudflare environment.
 
 ## Syncpack
 

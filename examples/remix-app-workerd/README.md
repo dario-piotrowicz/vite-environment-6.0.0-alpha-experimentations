@@ -1,6 +1,6 @@
-# Remix App Workerd Example
+# Remix App Cloudflare Example
 
-Minimal Remix application that uses the `vite-environment-provider-workerd` package to run the app's server side code inside workerd.
+Minimal Remix application that uses the `vite-environment-provider-cloudflare` package to run the app's server side code inside workerd.
 
 > [!Note]
 > The `@remix-run/dev` package is a build generated from the code at:
